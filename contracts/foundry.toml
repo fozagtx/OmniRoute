@@ -1,0 +1,24 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+solc_version = "0.8.30"
+optimizer = true
+optimizer_runs = 200
+via_ir = true
+evm_version = "cancun"
+remappings = [
+    "@openzeppelin/=lib/openzeppelin-contracts/",
+    "@somnia-chain/reactivity-contracts/=lib/somnia-reactivity-contracts/",
+    "forge-std/=lib/forge-std/src/"
+]
+
+[rpc_endpoints]
+somnia_testnet = "https://api.infra.testnet.somnia.network/"
+somnia_mainnet = "https://api.infra.mainnet.somnia.network/"
+
+[etherscan]
+# Somnia's Shannon explorer is Blockscout-compatible and does not require an API key.
+# A non-empty placeholder is required by foundry's etherscan config, but the value is unused.
+somnia_testnet = { key = "verifyblockscout", chain = 50312, url = "https://shannon-explorer.somnia.network/api" }
+somnia_mainnet = { key = "verifyblockscout", chain = 5031, url = "https://explorer.somnia.network/api" }

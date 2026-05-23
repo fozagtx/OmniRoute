@@ -1,0 +1,214 @@
+/*
+ * OmniRoute Design System
+ * Bright infrastructure UI: compressed black headlines, quiet SaaS copy,
+ * white panels, volt-yellow conversion controls, and restrained lavender accents.
+ */
+
+:root {
+  --font-display: "bagoss", "Arial Narrow", "Helvetica Neue Condensed", Impact, sans-serif;
+  --font-body: "GeistSans", "GeistVariable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --color-black: #000000;
+  --color-ink: #292c32;
+  --color-grey-700: #4c515d;
+  --color-grey-600: #676b7e;
+  --color-grey-500: #8a8fa8;
+  --color-grey-400: #a7abbe;
+  --color-grey-300: #d1d6e0;
+  --color-grey-200: #edeff3;
+  --color-grey-100: #fbfbfd;
+  --color-white: #ffffff;
+
+  --color-volt-500: #e4fe53;
+  --color-volt-alt: #efff5a;
+  --color-lime-deep: #e6fa36;
+  --color-indigo: #d2b5ec;
+  --color-purple-dark: #bc8ee4;
+  --color-royal-300: #c8a4e8;
+  --color-royal-200: #e3d0fd;
+  --color-lavender: #e6ccfc;
+  --color-blue-chain: #0052ff;
+  --color-orange-accent: #e9983d;
+  --color-positive: #3d993d;
+  --color-negative: #f25562;
+  --color-partial: #b7791f;
+
+  --surface-page: #fafafa;
+  --surface-card: #ffffff;
+  --surface-card-translucent: rgba(255, 255, 255, 0.82);
+  --surface-footer: rgba(255, 255, 255, 0.9);
+  --surface-overlay: rgba(0, 0, 0, 0.4);
+
+  --border-default: #e5e7eb;
+  --border-light: rgba(23, 25, 28, 0.1);
+  --border-black-10: rgba(0, 0, 0, 0.1);
+
+  --radius-xs: 8px;
+  --radius-sm: 10px;
+  --radius-md: 12px;
+  --radius-card: 16px;
+  --radius-panel: 24px;
+  --radius-pill: 9999px;
+
+  --shadow-card: 0 0 4px rgba(0, 0, 0, 0.25);
+  --shadow-button-primary: 0 0 4px rgba(0, 0, 0, 0.12);
+  --shadow-button-secondary: 0 0 4px rgba(0, 0, 0, 0.15);
+  --shadow-popover: 0 2px 10px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+
+  --type-hero: 52px;
+  --type-section-title: 36px;
+  --type-card-title: 18px;
+  --type-body-lg: 18px;
+  --type-body: 16px;
+  --type-body-sm: 15px;
+  --type-caption: 14px;
+  --type-micro: 13px;
+
+  --leading-display-tight: 0.85;
+  --leading-display-extra-tight: 0.8;
+  --leading-body: 1.5;
+  --leading-body-lg: 28px;
+  --leading-button: 1;
+
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-14: 56px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-30: 120px;
+  --space-section: 150px;
+  --space-section-tight: 120px;
+  --space-section-inner: 32px;
+
+  --content-max: min(1100px, 90vw);
+  --content-narrow: min(640px, 85vw);
+
+  --motion-fast: 150ms;
+  --motion-base: 180ms;
+  --motion-slow: 250ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Squid Widget Studio theme, used by cards and the dashboard workbench. */
+  --squid-font-main: GeistVariable, sans-serif;
+  --squid-radius-button-lg-primary: 3.75rem;
+  --squid-radius-button-lg-secondary: 3.75rem;
+  --squid-radius-button-lg-tertiary: 3.75rem;
+  --squid-radius-button-md-primary: 1.25rem;
+  --squid-radius-button-md-secondary: 1.25rem;
+  --squid-radius-button-md-tertiary: 1.25rem;
+  --squid-radius-button-sm-primary: 1.25rem;
+  --squid-radius-button-sm-secondary: 1.25rem;
+  --squid-radius-button-sm-tertiary: 1.25rem;
+  --squid-radius-container: 1.875rem;
+  --squid-radius-input: 9999px;
+  --squid-radius-menu-sm: 0.9375rem;
+  --squid-radius-menu-lg: 1.25rem;
+  --squid-radius-modal: 1.875rem;
+
+  --squid-type-caption: 0.875rem;
+  --squid-type-body-small: 1.14375rem;
+  --squid-type-body-medium: 1.40625rem;
+  --squid-type-body-large: 1.75625rem;
+  --squid-type-heading-small: 2.1875rem;
+  --squid-type-heading-medium: 3.08125rem;
+  --squid-type-heading-large: 4.40625rem;
+
+  --squid-grey-100: #fbfbfd;
+  --squid-grey-200: #edeff3;
+  --squid-grey-300: #d1d6e0;
+  --squid-grey-400: #a7abbe;
+  --squid-grey-500: #8a8fa8;
+  --squid-grey-600: #676b7e;
+  --squid-grey-700: #4c515d;
+  --squid-grey-800: #292c32;
+  --squid-grey-900: #17191c;
+  --squid-royal-300: #d9bef4;
+  --squid-royal-400: #b893ec;
+  --squid-royal-500: #9e79d2;
+  --squid-royal-600: #8353c5;
+  --squid-royal-700: #6b45a1;
+  --squid-status-positive: #7ae870;
+  --squid-status-negative: #ff4d5b;
+  --squid-status-partial: #f3af25;
+  --squid-highlight-700: #e4fe53;
+  --squid-animation-bg: #9e79d2;
+  --squid-animation-text: #fbfbfd;
+  --squid-input-bg: #17191c;
+  --squid-input-placeholder: #676b7e;
+  --squid-input-text: #d1d6e0;
+  --squid-input-selection: #d1d6e0;
+  --squid-menu-bg: #17191ca8;
+  --squid-menu-text: #fbfbfda8;
+  --squid-menu-backdrop: #fbfbfd1a;
+  --squid-modal-backdrop: #17191c54;
+  --squid-shadow-container: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 5px 50px -1px rgba(0, 0, 0, 0.33);
+
+  /* Compatibility aliases for existing component classes. */
+  --grey-100: var(--color-grey-100);
+  --grey-200: var(--color-grey-200);
+  --grey-300: var(--color-grey-300);
+  --grey-400: var(--color-grey-400);
+  --grey-500: var(--color-grey-500);
+  --grey-600: var(--color-grey-600);
+  --grey-700: var(--color-grey-700);
+  --grey-800: var(--color-ink);
+  --grey-900: var(--color-black);
+  --royal-300: var(--color-royal-300);
+  --royal-400: var(--color-purple-dark);
+  --royal-500: var(--color-purple-dark);
+  --royal-600: #9b67cf;
+  --status-positive: var(--color-positive);
+  --status-negative: var(--color-negative);
+  --status-partial: var(--color-partial);
+  --highlight-700: var(--color-volt-500);
+  --background: var(--surface-page);
+  --foreground: var(--color-ink);
+  --primary: var(--color-volt-500);
+  --primary-foreground: var(--color-ink);
+  --secondary: var(--color-white);
+  --muted: var(--color-grey-200);
+  --muted-foreground: var(--color-grey-600);
+  --accent: var(--color-volt-500);
+  --border: var(--border-default);
+  --input: var(--color-grey-100);
+  --ring: var(--color-black);
+  --destructive: var(--color-negative);
+  --skeleton: var(--color-grey-200);
+  --card-surface: var(--surface-card);
+  --card-elevated: var(--surface-card-translucent);
+  --shadow-container: var(--shadow-card);
+  --shadow-sm: var(--shadow-button-secondary);
+  --shadow-lg: var(--shadow-md);
+  --radius-button-lg: var(--radius-pill);
+  --radius-button-md: var(--radius-pill);
+  --radius-button-sm: var(--radius-pill);
+  --radius-container: var(--radius-card);
+  --radius-input: var(--radius-pill);
+  --spacing-1: var(--space-1);
+  --spacing-2: var(--space-2);
+  --spacing-3: var(--space-3);
+  --spacing-4: var(--space-4);
+  --spacing-5: var(--space-6);
+  --spacing-6: var(--space-8);
+  --spacing-7: var(--space-12);
+}
+
+@media (min-width: 900px) {
+  :root {
+    --type-hero: 100px;
+    --type-section-title: 72px;
+    --type-card-title: 22px;
+    --space-section: 240px;
+    --space-section-tight: 120px;
+    --space-section-inner: 56px;
+  }
+}

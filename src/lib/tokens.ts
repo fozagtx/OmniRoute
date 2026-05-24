@@ -4,7 +4,6 @@ type TokenOption = {
   symbol: string;
   label: string;
   address: string | undefined;
-  decimals: string;
 };
 
 export const tokenOptions: TokenOption[] = [
@@ -12,7 +11,6 @@ export const tokenOptions: TokenOption[] = [
     symbol: "USDC",
     label: "USDC",
     address: process.env.NEXT_PUBLIC_USDC_ADDRESS,
-    decimals: "6",
   },
 ] satisfies TokenOption[];
 

@@ -17,15 +17,15 @@ What separates this from a normal swap or bridge:
 
 ## Deployed contracts (Somnia testnet · chain 50312)
 
-All five contracts deployed 2026-05-21 from `0xBb67c7386e1e4Fb9931129CA09FE577F4B3fFb97` and **source-verified on the Shannon explorer** (Blockscout). Solidity 0.8.30 · via_ir · optimizer 200 · EVM cancun.
+All five contracts deployed 2026-05-24 from `0xBb67c7386e1e4Fb9931129CA09FE577F4B3fFb97` on Somnia testnet. Solidity 0.8.30 · via_ir · optimizer 200 · EVM cancun.
 
 | Contract | Address | Status |
 |---|---|---|
-| `IdentityRegistry8004` | [`0x540dd6496FF29780458Da1bAb487C62F473525BF`](https://shannon-explorer.somnia.network/address/0x540dd6496FF29780458Da1bAb487C62F473525BF) | ✅ Verified |
-| `SelfNullifierGate`    | [`0x833D1bBF1e30894cB20BF228485a43a22FCC3E2D`](https://shannon-explorer.somnia.network/address/0x833D1bBF1e30894cB20BF228485a43a22FCC3E2D) | ✅ Verified |
-| `OmniRouteAgent`       | [`0x60BC4a64F10530f8313575972Ca4288532B42F3e`](https://shannon-explorer.somnia.network/address/0x60BC4a64F10530f8313575972Ca4288532B42F3e) (AgentID `1`) | ✅ Verified |
-| `OmniRouteEscrow`      | [`0x073F9b59442e63f03b96D2aDe16dc37d40929e20`](https://shannon-explorer.somnia.network/address/0x073F9b59442e63f03b96D2aDe16dc37d40929e20) | ✅ Verified |
-| `OmniRouteReactor`     | [`0x751a57D4b11e679820d6681aA0CdE1E12251374D`](https://shannon-explorer.somnia.network/address/0x751a57D4b11e679820d6681aA0CdE1E12251374D) (subs `1008146` / `1008147`) | ✅ Verified |
+| `IdentityRegistry8004` | [`0x9FdF3029366685370a343Dd917bA90239420120e`](https://shannon-explorer.somnia.network/address/0x9FdF3029366685370a343Dd917bA90239420120e) | Deployed |
+| `SelfNullifierGate`    | [`0x8d089e5Cf981c8C36981ba1140Cc9FE68180D8b7`](https://shannon-explorer.somnia.network/address/0x8d089e5Cf981c8C36981ba1140Cc9FE68180D8b7) | Deployed |
+| `OmniRouteAgent`       | [`0x535352E64649783975d37E1dC0238F3bD0D57B33`](https://shannon-explorer.somnia.network/address/0x535352E64649783975d37E1dC0238F3bD0D57B33) (AgentID `1`) | Deployed |
+| `OmniRouteEscrow`      | [`0xf9e56cC9A6c61637fE378f089842d0E778E7f20b`](https://shannon-explorer.somnia.network/address/0xf9e56cC9A6c61637fE378f089842d0E778E7f20b) | Deployed |
+| `OmniRouteReactor`     | [`0xfbEec8d48A5ac3d7A2493B707B57344eb5f540C9`](https://shannon-explorer.somnia.network/address/0xfbEec8d48A5ac3d7A2493B707B57344eb5f540C9) (subs `1688529` / `1688530`) | Deployed |
 
 **Wiring:** subcommittee size **5**, consensus threshold **3**, request timeout **30 s**, off-ramp vault `0x73dD81a4C5d67E831291a4Bc49B26D590dee3caD`. Agent IDs consumed: JSON API `13174292974160097713`, LLM Inference (Qwen3-30B) `12847293847561029384`. Reactor opened two subscriptions on the precompile (`0x...0100`) — one per event topic. Full machine-readable manifest at [`deployed-addresses.json`](./deployed-addresses.json).
 
@@ -97,6 +97,72 @@ pnpm install
 cp .env.example .env.local      # fill NEXT_PUBLIC_ESCROW_ADDRESS + WalletConnect ID
 pnpm dev
 ```
+
+Live production dashboard:
+
+```text
+https://omniroute.vercel.app
+```
+
+## Current test flow
+
+The deployed test flow is intentionally limited to one pair so it can be tested
+end-to-end without unsupported currency options:
+
+| Field | Current value |
+|---|---|
+| Source token | Somnia testnet USDC `0xB2614c8E833ef0Caafccc4978D366378ae383169` |
+| Destination pair | `USDC / EUR` |
+| Rate URL stored in escrow job | `https://api.coinbase.com/v2/exchange-rates?currency=USDC` |
+| JSON path stored in escrow job | `data.rates.EUR` |
+| Escrow | `0xf9e56cC9A6c61637fE378f089842d0E778E7f20b` |
+
+The dashboard writes the direct Coinbase URL and JSON path into
+`createScheduledTransfer(...)`. The cron endpoint does not fetch market data; it
+only calls `checkScheduledTransfer(jobId)` on `OmniRouteEscrow`. The contract then
+pays the Somnia JSON API agent to read the stored URL/path and returns the rate
+through the platform callback.
+
+The scheduled trigger condition is:
+
+```text
+currentRate >= targetRate
+```
+
+Where funds go:
+
+- On success, the escrow sends the deposited USDC to the configured off-ramp
+  vault: `0x73dD81a4C5d67E831291a4Bc49B26D590dee3caD`.
+- The `destinationAccount` is not an on-chain token recipient. It is recorded in
+  the escrow job/events so the off-ramp can reconcile the EUR payout off-chain.
+- There is no user self-withdraw function in the current vault flow. Withdrawal
+  means the off-ramp operator releases the corresponding EUR payout after seeing
+  the settlement event and destination reference.
+- If the rate check fails, the target is not met, the LLM rejects the rate, or
+  slippage fails, the deposited USDC is refunded to the depositor.
+- Unspent native STT reserved for agent/cron work is rebated to the depositor.
+
+For a fast trigger test, use a target below the current EUR quote, for example
+`0.80` when Coinbase returns about `0.86`. For a waiting test, use a target above
+the current quote, for example `0.90`.
+
+Testing steps:
+
+1. Open `https://omniroute.vercel.app`.
+2. Connect a wallet on Somnia testnet.
+3. Make sure the wallet has STT gas and Somnia testnet USDC.
+4. The wallet must be verified by `SelfNullifierGate`; otherwise the escrow
+   reverts with `DepositorNotVerified`.
+5. Enter the USDC amount and minimum output.
+6. Approve USDC for the escrow.
+7. Connect the settlement card to automation.
+8. Set a target rate and keep max checks at `5` for the current test.
+9. Run the scheduled transfer.
+
+Cron is deployed at `/api/cron/check-scheduled` and protected by `CRON_SECRET`.
+On Vercel Hobby, the automatic schedule is daily, so manual authorized hits can be
+used during testing to trigger `checkScheduledTransfer(jobId)` immediately after a
+job exists.
 
 ## Performance targets (PRD §5)
 

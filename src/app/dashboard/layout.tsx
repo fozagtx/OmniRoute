@@ -46,7 +46,12 @@ export default function DashboardLayout({
         <div className="sidebar__footer">
           <ConnectKitButton.Custom>
             {({ isConnected, show, truncatedAddress }) => (
-              <button type="button" className="sidebar__wallet" onClick={show}>
+              <button
+                type="button"
+                className="sidebar__wallet"
+                aria-label={isConnected ? `Wallet ${truncatedAddress}` : "Connect wallet"}
+                onClick={show}
+              >
                 <span className="sidebar__wallet-dot" aria-hidden />
                 <span className="sidebar__wallet-label">{isConnected ? truncatedAddress : "Wallet"}</span>
               </button>

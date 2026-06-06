@@ -1,4 +1,4 @@
-# Somnia Market Console
+# Somnia Markets
 
 Native STT binary prediction markets resolved through Somnia Agents. The active contract is `SomniaPredictionMarket`; the dashboard reads and writes through that ABI only.
 
@@ -8,7 +8,7 @@ Native STT binary prediction markets resolved through Somnia Agents. The active 
 - Lets users stake STT directly, deposit native credit, stake from native credit, and claim resolved payouts.
 - Lets a user create a bounded policy for an executor: allowed side, max stake per action, max total stake, expiry, and owner-controlled disable.
 - Requests resolution through the documented Somnia Agents platform and stores request id, receipt id, response status, and output in contract state.
-- Loads recent market events from Somnia RPC and receipt JSON from a user-provided endpoint.
+- Loads recent market events from Somnia RPC and links only to resolver receipt IDs recorded on-chain.
 
 ## Verified Somnia Surface
 
@@ -32,7 +32,7 @@ contracts/
   script/Deploy.s.sol
 
 src/
-  app/AgentMarketConsole.tsx
+  app/AgentMarketApp.tsx
   app/dashboard/
   lib/predictionMarket.ts
   lib/chains.ts

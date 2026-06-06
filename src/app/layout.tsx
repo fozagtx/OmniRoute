@@ -3,11 +3,11 @@ import Providers from "./providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Somnia Market Console",
+  title: "Somnia Markets",
   description:
     "Create markets, stake positions, request resolution, and inspect resolver receipts on Somnia.",
   openGraph: {
-    title: "Somnia Market Console",
+    title: "Somnia Markets",
     description: "Create markets, stake positions, request resolution, and inspect resolver receipts on Somnia.",
     type: "website",
   },

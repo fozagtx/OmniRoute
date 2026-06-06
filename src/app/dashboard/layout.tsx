@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { ConnectKitButton } from "connectkit";
 import { Menu } from "lucide-react";
 import { useAccount } from "wagmi";
-import { SomniaMarkPaths } from "../SomniaMark";
 
 export default function DashboardLayout({
   children,
@@ -30,9 +30,13 @@ export default function DashboardLayout({
         </button>
         <a className="sidebar__brand" href="/" aria-label="Somnia Markets home">
           <span className="brand__mark" aria-hidden>
-            <svg width="24" height="18" viewBox="0 0 42.1956 32" fill="none">
-              <SomniaMarkPaths />
-            </svg>
+            <Image
+              src="/brand/somnia-market-penguin.png"
+              alt=""
+              width={56}
+              height={56}
+              priority
+            />
           </span>
         </a>
 
@@ -61,11 +65,11 @@ export default function DashboardLayout({
         ) : (
           <section className="wallet-gate" aria-labelledby="wallet-gate-title">
             <div className="wallet-gate__panel">
-              <p className="label">Wallet required</p>
-              <h1 id="wallet-gate-title">Connect before the market console opens.</h1>
+              <p className="label">Wallet</p>
+              <h1 id="wallet-gate-title">Connect wallet</h1>
               <p>
-                The console reads live Somnia state and can submit contract
-                transactions. It stays closed until a wallet is connected.
+                Required to view live Somnia market state and submit contract
+                transactions.
               </p>
               <ConnectKitButton.Custom>
                 {({ show }) => (

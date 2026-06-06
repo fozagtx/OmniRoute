@@ -91,7 +91,7 @@ function labelFrom<T extends readonly string[]>(labels: T, value: number | bigin
   return labels[index] ?? `#${index}`;
 }
 
-export default function AgentMarketConsole() {
+export default function AgentMarketApp() {
   const { address, isConnected } = useAccount();
   const publicClient = usePublicClient();
   const { writeContractAsync, isPending } = useWriteContract();
@@ -737,14 +737,14 @@ export default function AgentMarketConsole() {
 
   return (
     <section
-      className="market-console t-panel-slide"
+      className="market-app t-panel-slide"
       data-open={revealed ? "true" : "false"}
-      aria-label="Agentic prediction market console"
+      aria-label="Agentic prediction market"
     >
-      <header className="market-console__head">
+      <header className="market-app__head">
         <div>
           <p className="eyebrow">Somnia-native execution</p>
-          <h1 className="display">Prediction market console</h1>
+          <h1 className="display">Live market</h1>
         </div>
         <button type="button" className="cta cta--ghost" onClick={() => void loadLogs()}>
           <RefreshCw aria-hidden size={16} />
@@ -752,7 +752,7 @@ export default function AgentMarketConsole() {
         </button>
       </header>
 
-      <div className="stat-strip market-console__stats">
+      <div className="stat-strip market-app__stats">
         <div className="stat">
           <span className="label">Contract</span>
           <strong className="stat__val">{predictionMarketAddress ? shortAddress(predictionMarketAddress) : "unset"}</strong>
@@ -771,7 +771,7 @@ export default function AgentMarketConsole() {
         </div>
       </div>
 
-      <div className="grid-2 market-console__grid">
+      <div className="grid-2 market-app__grid">
         <form className="panel" onSubmit={onCreateMarket}>
           <div className="panel__head">
             <div>
@@ -969,7 +969,7 @@ export default function AgentMarketConsole() {
         </div>
       </section>
 
-      <div className="grid-2 market-console__grid">
+      <div className="grid-2 market-app__grid">
         <section className="panel">
           <div className="panel__head">
             <div>
@@ -1023,7 +1023,7 @@ export default function AgentMarketConsole() {
               <strong>Selected action</strong>
             </div>
             <input
-              className="market-console__action-input"
+              className="market-app__action-input"
               inputMode="numeric"
               value={selectedActionId}
               onChange={(event) => setSelectedActionId(event.target.value)}
@@ -1088,14 +1088,14 @@ export default function AgentMarketConsole() {
       </section>
 
       <section className="panel">
-        <div className="panel__body market-console__meta">
+        <div className="panel__body market-app__meta">
           <span>Somnia agents {shortAddress(typeof platformAddress === "string" ? platformAddress : undefined)}</span>
           <span>Parse agent {parseAgentId?.toString() ?? "not read"}</span>
           <span>Subcommittee {subcommitteeSize?.toString() ?? "not read"}</span>
         </div>
       </section>
 
-      {feedback ? <p className="market-console__feedback">{feedback}</p> : null}
+      {feedback ? <p className="market-app__feedback">{feedback}</p> : null}
     </section>
   );
 }

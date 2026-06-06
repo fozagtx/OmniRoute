@@ -1,7 +1,7 @@
 "use client";
 
-import AgentMarketConsole from "../AgentMarketConsole";
+import AgentMarketApp from "../AgentMarketApp";
 
 export default function Dashboard() {
-  return <AgentMarketConsole />;
+  return <AgentMarketApp />;
 }

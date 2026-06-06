@@ -394,13 +394,22 @@ hr {
   background: #090a0b;
 }
 
-.agent-nav__brand img {
-  width: 34px;
-  height: 34px;
-  border-radius: 4px;
+.somnia-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: #f4f7fb;
 }
 
-.agent-nav__brand span {
+.somnia-brand__mark {
+  width: 42px;
+  height: 32px;
+  flex: 0 0 auto;
+}
+
+.somnia-brand__text {
+  display: grid;
+  gap: 2px;
   font-size: 13px;
   line-height: 1;
   white-space: nowrap;

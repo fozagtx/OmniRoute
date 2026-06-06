@@ -149,7 +149,7 @@ export default function ClipBountyApp() {
   const [revealed, setRevealed] = useState(false);
   const [activeTask, setActiveTask] = useState<ActiveBountyTask>("submit");
 
-  const [title, setTitle] = useState("First YouTube clip push");
+  const [title, setTitle] = useState("First creator bounty push");
   const [campaignUrl, setCampaignUrl] = useState("");
   const [rules, setRules] = useState(
     "Submit a public YouTube Short that references the campaign and reaches the view target before the deadline.",
@@ -442,7 +442,7 @@ export default function ClipBountyApp() {
 
     try {
       const parsedBountyId = parsePositiveInteger(bountyId, "Bounty ID");
-      if (!clipUrl.trim()) throw new Error("YouTube clip URL is required.");
+      if (!clipUrl.trim()) throw new Error("YouTube URL is required.");
       const receipt = await writeClipContract({
         functionName: "submitClip",
         args: [BigInt(parsedBountyId), clipUrl.trim()],
@@ -565,11 +565,11 @@ export default function ClipBountyApp() {
   }
 
   return (
-    <section className="clip-app t-panel-slide" data-open={revealed ? "true" : "false"} aria-label="YouTube clip bounty escrow">
+    <section className="clip-app t-panel-slide" data-open={revealed ? "true" : "false"} aria-label="Social bounty escrow">
       <header className="clip-app__head">
         <div>
-          <h1 className="display">Clip bounties</h1>
-          <p>Fund YouTube clip rewards, submit public URLs, and let Somnia verify views before escrow pays.</p>
+          <h1 className="display">Social bounties</h1>
+          <p>Fund creator rewards, submit public URLs, and let Somnia verify the metric before escrow pays. YouTube views are live first.</p>
         </div>
         <div className="clip-contract-chip">
           <span>Contract</span>
@@ -700,7 +700,7 @@ export default function ClipBountyApp() {
                 <div className="task-block">
                   <div className="task-block__head">
                     <Send aria-hidden size={18} />
-                    <strong>Submit YouTube clip</strong>
+                    <strong>Submit creator link</strong>
                   </div>
                   <div className="form-grid">
                     <label className="field">
@@ -708,7 +708,7 @@ export default function ClipBountyApp() {
                       <input inputMode="numeric" value={bountyId} onChange={(event) => setBountyId(event.target.value)} />
                     </label>
                     <label className="field field--wide">
-                      <span className="label">YouTube clip URL</span>
+                      <span className="label">Current platform URL</span>
                       <input
                         value={clipUrl}
                         onChange={(event) => setClipUrl(event.target.value)}

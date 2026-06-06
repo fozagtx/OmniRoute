@@ -4,28 +4,28 @@ import LandingWalletButton from "./LandingWalletButton";
 import { clipBountyAddress } from "@/lib/clipBounty";
 
 const flowItems = [
+  { label: "Choose platform", tone: "cyan" },
   { label: "Fund bounty", tone: "orange" },
-  { label: "Submit clip", tone: "pink" },
-  { label: "Check views", tone: "cyan" },
-  { label: "Pay clipper", tone: "lime" },
-  { label: "Refund unused", tone: "yellow" },
+  { label: "Submit public URL", tone: "pink" },
+  { label: "Verify metrics", tone: "lime" },
+  { label: "Pay creator", tone: "yellow" },
 ] as const;
 
 const featureCards = [
   {
     tone: "lime",
     title: "Escrow first",
-    body: "Creators fund the bounty up front. The contract holds STT until a submitted YouTube URL clears the view check.",
+    body: "Creators fund the bounty up front. The contract holds STT until a submitted public URL clears the metric check.",
   },
   {
     tone: "cyan",
-    title: "Public URL proof",
-    body: "Clippers submit their YouTube clip URL. Somnia Agents read the public page and return the visible view count.",
+    title: "Network-ready surface",
+    body: "YouTube view checks are live first. Twitter and Instagram sit in the product lane without being sold as active contract support yet.",
   },
   {
     tone: "yellow",
     title: "Direct payout",
-    body: "If the view threshold is met, the contract pays the clipper from escrow. The app never routes the payout through itself.",
+    body: "If the threshold is met, the contract pays the creator from escrow. The app never routes the payout through itself.",
   },
 ] as const;
 
@@ -35,12 +35,12 @@ const howItWorks = [
     body: "Set the campaign URL, rules, minimum views, reward per clip, max payouts, and deadline. Funding is sent with the transaction.",
   },
   {
-    title: "Collect YouTube links",
-    body: "Clippers submit public YouTube Shorts or video URLs against the bounty. Each submission is stored on-chain.",
+    title: "Collect public links",
+    body: "Creators submit public social URLs against the bounty. Today the contract accepts YouTube links for live view checks.",
   },
   {
     title: "Ask Somnia to verify",
-    body: "The contract sends the submitted URL to Somnia's LLM Parse Website agent and asks for the visible view count.",
+    body: "The contract sends the submitted URL to Somnia's LLM Parse Website agent and asks for the visible metric.",
   },
   {
     title: "Pay or reject",
@@ -52,22 +52,22 @@ const faqs = [
   {
     question: "Where does the agent read data from?",
     answer:
-      "From the submitted YouTube URL. The contract sends that URL and the bounty rules to Somnia's Parse Website agent during verification.",
+      "From the submitted public URL. In the current live flow, that URL must be from YouTube because the deployed contract verifies YouTube views.",
   },
   {
     question: "Does the app hold creator funds?",
     answer:
-      "No. The creator signs a contract transaction and funds sit in the SomniaClipBounty escrow until paid or refunded.",
+      "No. The creator signs a contract transaction and funds sit in escrow until paid or refunded.",
   },
   {
     question: "What can the agent verify?",
     answer:
-      "This flow checks the public YouTube page and visible view count. It does not claim to inspect private analytics or video frames.",
+      "The live flow checks the public YouTube page and visible view count. It does not claim to inspect private analytics or video frames.",
   },
   {
     question: "Who receives payment?",
     answer:
-      "The clipper address that submitted the qualifying URL receives STT directly from the contract.",
+      "The creator address that submitted the qualifying URL receives STT directly from the contract.",
   },
 ] as const;
 
@@ -77,8 +77,8 @@ export default function Home() {
   return (
     <main className="agent-landing">
       <div className="agent-shell">
-        <header className="agent-nav" aria-label="Clip bounty navigation">
-          <Link className="agent-nav__brand" href="/" aria-label="Somnia Clip Bounties home">
+        <header className="agent-nav" aria-label="Social bounty navigation">
+          <Link className="agent-nav__brand" href="/" aria-label="Somnia Social Bounties home">
             <SomniaBrand />
           </Link>
 
@@ -98,10 +98,10 @@ export default function Home() {
 
         <section className="agent-hero" aria-labelledby="agent-hero-title">
           <div className="agent-hero__copy">
-            <p className="agent-announcement">YouTube bounties on Somnia escrow</p>
-            <h1 id="agent-hero-title">Pay clippers only when the views arrive.</h1>
+            <p className="agent-announcement">Social bounties on Somnia escrow</p>
+            <h1 id="agent-hero-title">Pay creators only when the proof arrives.</h1>
             <p>
-              Create a funded YouTube bounty, let creators submit public clips, and have Somnia verify the view count before STT leaves escrow.
+              Create a funded social bounty, collect public creator links, and have Somnia verify the metric before STT leaves escrow. YouTube views are live first.
             </p>
             <div className="agent-hero__actions">
               <Link className="agent-button agent-button--primary" href="/dashboard">
@@ -110,20 +110,33 @@ export default function Home() {
             </div>
           </div>
 
-          <figure className="agent-visual" aria-label="YouTube clip bounty workflow">
+          <figure className="agent-visual" aria-label="Social bounty workflow">
             <Image
               className="agent-hero-image"
-              src="/brand/youtube-clip-agent.png"
-              alt="Creator workspace for a YouTube clip bounty"
+              src="/brand/social-bounty-agent.png"
+              alt="Creator workspace for a social bounty"
               width={1254}
               height={1254}
               priority
             />
             <figcaption className="agent-visual__console">
-              <span>Submit YouTube URL</span>
-              <div>
-                <button type="button">Attach clip</button>
-                <button type="button">Check views</button>
+              <span>Allowed networks</span>
+              <div className="agent-platforms" aria-label="Supported social platforms">
+                <span className="agent-platform-pill agent-platform-pill--live">
+                  <span className="social-logo social-logo--youtube" aria-hidden />
+                  <span>YouTube</span>
+                  <small>Live</small>
+                </span>
+                <span className="agent-platform-pill">
+                  <span className="social-logo social-logo--twitter" aria-hidden>t</span>
+                  <span>Twitter</span>
+                  <small>Soon</small>
+                </span>
+                <span className="agent-platform-pill">
+                  <span className="social-logo social-logo--instagram" aria-hidden />
+                  <span>Instagram</span>
+                  <small>Soon</small>
+                </span>
                 <Link href="/dashboard" aria-label="Open dashboard">
                   <span aria-hidden>↗</span>
                 </Link>
@@ -144,7 +157,7 @@ export default function Home() {
         <section className="agent-section agent-features" id="features" aria-labelledby="features-title">
           <div className="agent-section__header">
             <h2 id="features-title">Built for creator bounty drops.</h2>
-            <p>One contract surface: bounty funding, clip submission, Somnia verification, payout, and unused escrow refund.</p>
+            <p>One contract surface: bounty funding, URL submission, Somnia verification, payout, and unused escrow refund.</p>
           </div>
           <div className="agent-feature-grid">
             {featureCards.map((feature) => (
@@ -208,10 +221,10 @@ export default function Home() {
 function SomniaBrand() {
   return (
     <span className="somnia-brand" aria-hidden="true">
-      <Image className="somnia-brand__mark" src="/brand/somnia-clip-logo.png" alt="" width={56} height={56} priority />
+      <Image className="somnia-brand__mark" src="/brand/somnia-bounty-logo.png" alt="" width={56} height={56} priority />
       <span className="somnia-brand__text">
-        <span>Somnia</span>
-        <span>Clips</span>
+        <span>Social</span>
+        <span>Bounties</span>
       </span>
     </span>
   );

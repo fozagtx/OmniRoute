@@ -28,10 +28,10 @@ export default function DashboardLayout({
         >
           <Menu aria-hidden size={18} />
         </button>
-        <a className="sidebar__brand" href="/" aria-label="Clip bounties home">
+        <a className="sidebar__brand" href="/" aria-label="Social bounties home">
           <span className="brand__mark" aria-hidden>
             <Image
-              src="/brand/somnia-clip-logo.png"
+              src="/brand/somnia-bounty-logo.png"
               alt=""
               width={56}
               height={56}

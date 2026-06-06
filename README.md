@@ -1,13 +1,13 @@
-# Somnia Clip Bounties
+# Somnia Social Bounties
 
-Native STT YouTube clip bounties verified through Somnia Agents. The active contract is `SomniaClipBounty`; the dashboard reads and writes through that ABI only.
+Native STT social creator bounties verified through Somnia Agents. YouTube view verification is the live first network; the active contract is `SomniaClipBounty`, and the dashboard reads and writes through that ABI only.
 
 ## What It Does
 
-- Lets a creator fund a YouTube bounty with campaign URL, rules, minimum views, reward per clip, max payouts, and deadline.
-- Lets clippers submit public YouTube clip URLs against a live bounty.
+- Lets a creator fund a social bounty with campaign URL, rules, minimum views, reward per post, max payouts, and deadline.
+- Lets creators submit public URLs against a live bounty. The current contract accepts YouTube URLs for live verification.
 - Requests verification through Somnia's LLM Parse Website agent and records the observed public view count.
-- Pays qualified clippers directly from escrow and lets the creator close the bounty to refund unused STT.
+- Pays qualified creators directly from escrow and lets the funder close the bounty to refund unused STT.
 - Keeps bounty state, submission state, request ids, observed views, and payout amounts on-chain.
 
 ## Verified Somnia Surface
@@ -23,7 +23,7 @@ The testnet contract uses the documented LLM Parse Website agent id:
 12875401142070969085
 ```
 
-The agent reads the submitted public YouTube URL. It can check page-visible data such as view count; it is not given a user's private analytics account.
+The agent reads the submitted public URL. In the current live flow that URL is YouTube, where it can check page-visible data such as view count; it is not given a user's private analytics account.
 
 ## Project Layout
 
@@ -90,11 +90,11 @@ NEXT_PUBLIC_CLIP_BOUNTY_ADDRESS=
 
 ## Flow
 
-1. Create a funded bounty with a YouTube campaign URL, rules, view threshold, reward per clip, max payouts, and deadline.
-2. Submit a public YouTube clip URL against the bounty.
+1. Create a funded bounty with a campaign URL, rules, view threshold, reward per approved post, max payouts, and deadline.
+2. Submit a public URL against the bounty. Today that URL must be YouTube.
 3. Request Somnia verification for a submission and pay the quoted agent fee.
 4. The callback records the observed view count.
-5. If the count meets the threshold and escrow capacity remains, the contract pays the clipper directly.
+5. If the count meets the threshold and escrow capacity remains, the contract pays the creator directly.
 6. The creator can close the bounty and receive unused escrow back.
 
 ## Live Somnia Testnet Run

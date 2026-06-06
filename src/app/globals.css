@@ -1164,6 +1164,89 @@ hr {
   gap: 8px;
 }
 
+.agent-platforms {
+  flex-wrap: wrap;
+}
+
+.agent-platform-pill {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px 6px 6px;
+  border: 1px solid rgba(26, 25, 23, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.58);
+  color: #26231f;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.agent-platform-pill small {
+  min-height: 20px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: rgba(26, 25, 23, 0.08);
+  color: #6d665e;
+  font-size: 11px;
+}
+
+.agent-platform-pill--live small {
+  background: rgba(78, 255, 27, 0.16);
+  color: #245c16;
+}
+
+.social-logo {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 800;
+  text-transform: lowercase;
+}
+
+.social-logo--youtube {
+  background: #ff0033;
+}
+
+.social-logo--youtube::before {
+  content: "";
+  width: 0;
+  height: 0;
+  margin-left: 2px;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 10px solid #ffffff;
+}
+
+.social-logo--twitter {
+  background: #111111;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.social-logo--instagram {
+  background:
+    radial-gradient(circle at 70% 25%, #ffffff 0 4%, transparent 5%),
+    radial-gradient(circle at 30% 110%, #ffd76f 0 18%, transparent 39%),
+    linear-gradient(135deg, #6f3cff, #ff2e7e 52%, #ff8a00);
+}
+
+.social-logo--instagram::before {
+  content: "";
+  width: 13px;
+  height: 13px;
+  border: 2px solid #ffffff;
+  border-radius: 5px;
+}
+
 .agent-visual__console button,
 .agent-visual__console a {
   min-height: 38px;

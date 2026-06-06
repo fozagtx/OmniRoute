@@ -3,12 +3,11 @@ import Providers from "./providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Somnia Markets",
-  description:
-    "Create live markets, stake STT, request Somnia resolution, and claim payouts on-chain.",
+  title: "Somnia Clip Bounties",
+  description: "Fund YouTube clip bounties, verify views with Somnia Agents, and pay clippers from escrow.",
   openGraph: {
-    title: "Somnia Markets",
-    description: "Create live markets, stake STT, request Somnia resolution, and claim payouts on-chain.",
+    title: "Somnia Clip Bounties",
+    description: "Fund YouTube clip bounties, verify views with Somnia Agents, and pay clippers from escrow.",
     type: "website",
   },
 };

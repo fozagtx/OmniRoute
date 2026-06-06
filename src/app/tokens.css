@@ -1,5 +1,5 @@
 /*
- * Somnia Markets Design System
+ * Somnia Clip Bounties Design System
  * Bright infrastructure UI: compressed black headlines, quiet SaaS copy,
  * white panels, volt-yellow conversion controls, and restrained lavender accents.
  */
@@ -97,60 +97,60 @@
   --motion-slow: 250ms;
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Somnia market theme, used by cards and the dashboard workbench. */
-  --market-font-main: GeistVariable, sans-serif;
-  --market-radius-button-lg-primary: 3.75rem;
-  --market-radius-button-lg-secondary: 3.75rem;
-  --market-radius-button-lg-tertiary: 3.75rem;
-  --market-radius-button-md-primary: 1.25rem;
-  --market-radius-button-md-secondary: 1.25rem;
-  --market-radius-button-md-tertiary: 1.25rem;
-  --market-radius-button-sm-primary: 1.25rem;
-  --market-radius-button-sm-secondary: 1.25rem;
-  --market-radius-button-sm-tertiary: 1.25rem;
-  --market-radius-container: 1.875rem;
-  --market-radius-input: 9999px;
-  --market-radius-menu-sm: 0.9375rem;
-  --market-radius-menu-lg: 1.25rem;
-  --market-radius-modal: 1.875rem;
+  /* Somnia clip bounty theme, used by cards and the dashboard workbench. */
+  --clip-font-main: GeistVariable, sans-serif;
+  --clip-radius-button-lg-primary: 3.75rem;
+  --clip-radius-button-lg-secondary: 3.75rem;
+  --clip-radius-button-lg-tertiary: 3.75rem;
+  --clip-radius-button-md-primary: 1.25rem;
+  --clip-radius-button-md-secondary: 1.25rem;
+  --clip-radius-button-md-tertiary: 1.25rem;
+  --clip-radius-button-sm-primary: 1.25rem;
+  --clip-radius-button-sm-secondary: 1.25rem;
+  --clip-radius-button-sm-tertiary: 1.25rem;
+  --clip-radius-container: 1.875rem;
+  --clip-radius-input: 9999px;
+  --clip-radius-menu-sm: 0.9375rem;
+  --clip-radius-menu-lg: 1.25rem;
+  --clip-radius-modal: 1.875rem;
 
-  --market-type-caption: 0.875rem;
-  --market-type-body-small: 1.14375rem;
-  --market-type-body-medium: 1.40625rem;
-  --market-type-body-large: 1.75625rem;
-  --market-type-heading-small: 2.1875rem;
-  --market-type-heading-medium: 3.08125rem;
-  --market-type-heading-large: 4.40625rem;
+  --clip-type-caption: 0.875rem;
+  --clip-type-body-small: 1.14375rem;
+  --clip-type-body-medium: 1.40625rem;
+  --clip-type-body-large: 1.75625rem;
+  --clip-type-heading-small: 2.1875rem;
+  --clip-type-heading-medium: 3.08125rem;
+  --clip-type-heading-large: 4.40625rem;
 
-  --market-grey-100: #fbfbfd;
-  --market-grey-200: #edeff3;
-  --market-grey-300: #d1d6e0;
-  --market-grey-400: #a7abbe;
-  --market-grey-500: #8a8fa8;
-  --market-grey-600: #676b7e;
-  --market-grey-700: #4c515d;
-  --market-grey-800: #292c32;
-  --market-grey-900: #17191c;
-  --market-royal-300: #d9bef4;
-  --market-royal-400: #b893ec;
-  --market-royal-500: #9e79d2;
-  --market-royal-600: #8353c5;
-  --market-royal-700: #6b45a1;
-  --market-status-positive: #7ae870;
-  --market-status-negative: #ff4d5b;
-  --market-status-partial: #f3af25;
-  --market-highlight-700: #e4fe53;
-  --market-animation-bg: #9e79d2;
-  --market-animation-text: #fbfbfd;
-  --market-input-bg: #17191c;
-  --market-input-placeholder: #676b7e;
-  --market-input-text: #d1d6e0;
-  --market-input-selection: #d1d6e0;
-  --market-menu-bg: #17191ca8;
-  --market-menu-text: #fbfbfda8;
-  --market-menu-backdrop: #fbfbfd1a;
-  --market-modal-backdrop: #17191c54;
-  --market-shadow-container: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 5px 50px -1px rgba(0, 0, 0, 0.33);
+  --clip-grey-100: #fbfbfd;
+  --clip-grey-200: #edeff3;
+  --clip-grey-300: #d1d6e0;
+  --clip-grey-400: #a7abbe;
+  --clip-grey-500: #8a8fa8;
+  --clip-grey-600: #676b7e;
+  --clip-grey-700: #4c515d;
+  --clip-grey-800: #292c32;
+  --clip-grey-900: #17191c;
+  --clip-royal-300: #d9bef4;
+  --clip-royal-400: #b893ec;
+  --clip-royal-500: #9e79d2;
+  --clip-royal-600: #8353c5;
+  --clip-royal-700: #6b45a1;
+  --clip-status-positive: #7ae870;
+  --clip-status-negative: #ff4d5b;
+  --clip-status-partial: #f3af25;
+  --clip-highlight-700: #e4fe53;
+  --clip-animation-bg: #9e79d2;
+  --clip-animation-text: #fbfbfd;
+  --clip-input-bg: #17191c;
+  --clip-input-placeholder: #676b7e;
+  --clip-input-text: #d1d6e0;
+  --clip-input-selection: #d1d6e0;
+  --clip-menu-bg: #17191ca8;
+  --clip-menu-text: #fbfbfda8;
+  --clip-menu-backdrop: #fbfbfd1a;
+  --clip-modal-backdrop: #17191c54;
+  --clip-shadow-container: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 5px 50px -1px rgba(0, 0, 0, 0.33);
 
   /* Compatibility aliases for existing component classes. */
   --grey-100: var(--color-grey-100);

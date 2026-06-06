@@ -28,10 +28,10 @@ export default function DashboardLayout({
         >
           <Menu aria-hidden size={18} />
         </button>
-        <a className="sidebar__brand" href="/" aria-label="Somnia Markets home">
+        <a className="sidebar__brand" href="/" aria-label="Clip bounties home">
           <span className="brand__mark" aria-hidden>
             <Image
-              src="/brand/somnia-market-logo.png"
+              src="/brand/somnia-clip-logo.png"
               alt=""
               width={56}
               height={56}
@@ -65,8 +65,7 @@ export default function DashboardLayout({
               <p className="label">Wallet</p>
               <h1 id="wallet-gate-title">Connect wallet</h1>
               <p>
-                Required to view live Somnia market state and submit contract
-                transactions.
+                Required to view live bounty escrow state and submit contract transactions.
               </p>
               <button type="button" className="cta wallet-gate__button" disabled={isConnecting} onClick={() => void connect()}>
                 {isConnecting ? "Connecting" : "Connect wallet"}

@@ -1,7 +1,7 @@
 "use client";
 
-import AgentMarketApp from "../AgentMarketApp";
+import ClipBountyApp from "../ClipBountyApp";
 
 export default function Dashboard() {
-  return <AgentMarketApp />;
+  return <ClipBountyApp />;
 }

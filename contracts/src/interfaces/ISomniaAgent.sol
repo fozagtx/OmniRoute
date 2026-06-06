@@ -53,12 +53,10 @@ interface IAgentRequester {
     event SubcommitteePaid(uint256 indexed requestId, uint256 totalPaid, uint256 perMember);
     event CommitteeDepositFailed(uint256 indexed requestId, uint256 attemptedAmount);
 
-    function createRequest(
-        uint256 agentId,
-        address callbackAddress,
-        bytes4 callbackSelector,
-        bytes calldata payload
-    ) external payable returns (uint256 requestId);
+    function createRequest(uint256 agentId, address callbackAddress, bytes4 callbackSelector, bytes calldata payload)
+        external
+        payable
+        returns (uint256 requestId);
 
     function createAdvancedRequest(
         uint256 agentId,
@@ -83,7 +81,9 @@ interface IJsonApiAgent {
     function fetchInt(string calldata url, string calldata selector, uint8 decimals) external returns (int256);
     function fetchBool(string calldata url, string calldata selector) external returns (bool);
     function fetchStringArray(string calldata url, string calldata selector) external returns (string[] memory);
-    function fetchUintArray(string calldata url, string calldata selector, uint8 decimals) external returns (uint256[] memory);
+    function fetchUintArray(string calldata url, string calldata selector, uint8 decimals)
+        external
+        returns (uint256[] memory);
 }
 
 /// @notice Somnia LLM Inference base agent — Qwen3-30B running deterministically
@@ -105,11 +105,9 @@ interface ILLMInferenceAgent {
         bool chainOfThought
     ) external returns (int256 response);
 
-    function inferChat(
-        string[] calldata roles,
-        string[] calldata messages,
-        bool chainOfThought
-    ) external returns (string memory response);
+    function inferChat(string[] calldata roles, string[] calldata messages, bool chainOfThought)
+        external
+        returns (string memory response);
 }
 
 /// @notice Somnia LLM Parse Website base agent. Signatures sourced from

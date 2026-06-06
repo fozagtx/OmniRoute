@@ -1,22 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowRightLeft, BadgeCheck, LayoutGrid, Plus, ShieldCheck } from "lucide-react";
+import { BadgeCheck, CircleDollarSign, LayoutGrid, Plus, Send } from "lucide-react";
 
 const navItems = [
-  { href: "#markets", full: "Markets", short: "Mkt", icon: LayoutGrid },
-  { href: "#market-task-trade", full: "Trade", short: "Trade", icon: ArrowRightLeft },
-  { href: "#market-task-resolve", full: "Resolve", short: "Settle", icon: BadgeCheck },
-  { href: "#market-task-policy", full: "Policy", short: "Policy", icon: ShieldCheck },
-  { href: "#market-task-create", full: "Create", short: "New", icon: Plus },
+  { href: "#bounties", full: "Bounties", short: "List", icon: LayoutGrid },
+  { href: "#bounty-task-submit", full: "Submit", short: "Send", icon: Send },
+  { href: "#bounty-task-verify", full: "Verify", short: "Check", icon: BadgeCheck },
+  { href: "#bounty-task-create", full: "Create", short: "New", icon: Plus },
+  { href: "#bounty-task-funds", full: "Funds", short: "Pay", icon: CircleDollarSign },
 ] as const;
 
 export default function DashboardSidebar() {
-  const [activeHref, setActiveHref] = useState("#markets");
+  const [activeHref, setActiveHref] = useState("#bounties");
 
   useEffect(() => {
     function syncHash() {
-      setActiveHref(window.location.hash || "#markets");
+      setActiveHref(window.location.hash || "#bounties");
     }
 
     syncHash();
@@ -26,11 +26,11 @@ export default function DashboardSidebar() {
 
   return (
     <div className="sidebar__nav" aria-label="Dashboard navigation">
-      <nav className="sidebar__group" aria-label="Market workflow">
-        <span className="sidebar__section-label sidebar__label-full">Workflow</span>
+      <nav className="sidebar__group" aria-label="Bounty workflow">
+        <span className="sidebar__section-label sidebar__label-full">Bounty flow</span>
         {navItems.map((item) => {
           const Icon = item.icon;
-          const active = activeHref === item.href || (activeHref === "" && item.href === "#markets");
+          const active = activeHref === item.href || (activeHref === "" && item.href === "#bounties");
           return (
             <a
               className={`sidebar__link ${active ? "sidebar__link--active" : ""}`}

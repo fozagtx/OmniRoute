@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import LandingWalletButton from "./LandingWalletButton";
 import { clipBountyAddress } from "@/lib/clipBounty";
 
 const flowItems = [
@@ -87,9 +88,12 @@ export default function Home() {
             <a href="#faq">FAQ</a>
           </nav>
 
-          <Link className="agent-nav__cta" href="/dashboard">
-            Open app
-          </Link>
+          <div className="agent-nav__actions">
+            <LandingWalletButton />
+            <Link className="agent-nav__cta agent-nav__cta--secondary" href="/dashboard">
+              Dashboard
+            </Link>
+          </div>
         </header>
 
         <section className="agent-hero" aria-labelledby="agent-hero-title">

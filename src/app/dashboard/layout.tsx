@@ -13,8 +13,8 @@ export default function DashboardLayout({
   sidebar: React.ReactNode;
 }) {
   const [open, setOpen] = useState(true);
-  const { address, connect, disconnect, error, isConnected, isConnecting } = useWallet();
-  const walletLabel = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Wallet";
+  const { address, connect, disconnect, isConnected, isConnecting } = useWallet();
+  const walletLabel = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : isConnecting ? "Connecting" : "Connect";
 
   return (
     <div className={`dashboard-layout ${open ? "dashboard-layout--expanded" : "dashboard-layout--collapsed"}`}>
@@ -40,7 +40,7 @@ export default function DashboardLayout({
           </span>
         </a>
 
-        <div className="sidebar__children">{isConnected ? sidebar : null}</div>
+        <div className="sidebar__children">{sidebar}</div>
 
         <div className="sidebar__footer">
           <button
@@ -51,30 +51,12 @@ export default function DashboardLayout({
             onClick={() => (isConnected ? disconnect() : void connect())}
           >
             <span className="sidebar__wallet-dot" data-connected={isConnected ? "true" : "false"} aria-hidden />
-            <span className="sidebar__wallet-label">{isConnected ? walletLabel : "Wallet"}</span>
+            <span className="sidebar__wallet-label">{walletLabel}</span>
           </button>
         </div>
       </aside>
 
-      <main className="dashboard-main">
-        {isConnected ? (
-          children
-        ) : (
-          <section className="wallet-gate" aria-labelledby="wallet-gate-title">
-            <div className="wallet-gate__panel">
-              <p className="label">Wallet</p>
-              <h1 id="wallet-gate-title">Connect wallet</h1>
-              <p>
-                Required to view live bounty escrow state and submit contract transactions.
-              </p>
-              <button type="button" className="cta wallet-gate__button" disabled={isConnecting} onClick={() => void connect()}>
-                {isConnecting ? "Connecting" : "Connect wallet"}
-              </button>
-              {error ? <p className="wallet-gate__error">{error}</p> : null}
-            </div>
-          </section>
-        )}
-      </main>
+      <main className="dashboard-main">{children}</main>
     </div>
   );
 }

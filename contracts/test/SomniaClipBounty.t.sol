@@ -5,7 +5,7 @@ import {Test} from "forge-std/Test.sol";
 import {Request, Response, ResponseStatus} from "../src/interfaces/ISomniaAgent.sol";
 import {SomniaClipBounty} from "../src/SomniaClipBounty.sol";
 
-contract MockSomniaAgentRequester {
+contract LocalSomniaAgentRequester {
     uint256 public nextRequestId = 900;
 
     function createRequest(uint256, address, bytes4, bytes calldata) external payable returns (uint256 requestId) {
@@ -25,7 +25,7 @@ contract SomniaClipBountyTest is Test {
     address private outsider = address(0xCAFE);
 
     function setUp() public {
-        MockSomniaAgentRequester requester = new MockSomniaAgentRequester();
+        LocalSomniaAgentRequester requester = new LocalSomniaAgentRequester();
         vm.etch(0x037Bb9C718F3f7fe5eCBDB0b600D607b52706776, address(requester).code);
 
         bounty = new SomniaClipBounty();

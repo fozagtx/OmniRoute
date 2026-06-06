@@ -178,6 +178,8 @@ export default function ClipBountyApp() {
   const [submissionsLoading, setSubmissionsLoading] = useState(false);
 
   const contractEnabled = clipBountyConfigured && Boolean(clipBountyAddress);
+  const writeDisabled = isPending || !contractEnabled || !isConnected;
+  const writeTitle = !isConnected ? "Connect wallet before sending a transaction." : undefined;
 
   const bountyIdForRead = useMemo(() => {
     const parsed = Number.parseInt(bountyId, 10);
@@ -715,7 +717,7 @@ export default function ClipBountyApp() {
                     </label>
                   </div>
                   <div className="form-actions form-actions--end">
-                    <button type="submit" className="cta" disabled={isPending || !contractEnabled}>
+                    <button type="submit" className="cta" disabled={writeDisabled} title={writeTitle}>
                       Submit clip
                     </button>
                   </div>
@@ -744,7 +746,8 @@ export default function ClipBountyApp() {
                     <button
                       type="button"
                       className="cta"
-                      disabled={isPending || !contractEnabled || typeof verificationCost !== "bigint"}
+                      disabled={writeDisabled || typeof verificationCost !== "bigint"}
+                      title={writeTitle}
                       onClick={onRequestVerification}
                     >
                       Check views
@@ -819,7 +822,7 @@ export default function ClipBountyApp() {
                   </div>
                   <div className="form-actions">
                     <span className="form-feedback">Funds sent: reward x max payouts.</span>
-                    <button type="submit" className="cta" disabled={isPending || !contractEnabled}>
+                    <button type="submit" className="cta" disabled={writeDisabled} title={writeTitle}>
                       Create bounty
                     </button>
                   </div>
@@ -845,10 +848,10 @@ export default function ClipBountyApp() {
                     </label>
                   </div>
                   <div className="form-actions form-actions--end">
-                    <button type="button" className="cta cta--ghost" disabled={isPending || !contractEnabled} onClick={onCloseBounty}>
+                    <button type="button" className="cta cta--ghost" disabled={writeDisabled} title={writeTitle} onClick={onCloseBounty}>
                       Close bounty
                     </button>
-                    <button type="button" className="cta" disabled={isPending || !contractEnabled} onClick={onFundBounty}>
+                    <button type="button" className="cta" disabled={writeDisabled} title={writeTitle} onClick={onFundBounty}>
                       Add funds
                     </button>
                   </div>
@@ -870,7 +873,7 @@ export default function ClipBountyApp() {
                     </label>
                   </div>
                   <div className="form-actions form-actions--end">
-                    <button type="button" className="cta cta--ghost" disabled={isPending || !contractEnabled} onClick={onWithdrawCredit}>
+                    <button type="button" className="cta cta--ghost" disabled={writeDisabled} title={writeTitle} onClick={onWithdrawCredit}>
                       Withdraw credit
                     </button>
                   </div>

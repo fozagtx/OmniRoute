@@ -1,7 +1,7 @@
 "use client";
 
-import RouteTransferForm from "../RouteTransferForm";
+import AgentMarketConsole from "../AgentMarketConsole";
 
 export default function Dashboard() {
-  return <RouteTransferForm />;
+  return <AgentMarketConsole />;
 }

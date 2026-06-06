@@ -25,7 +25,7 @@ export default function DashboardLayout({
         >
           <Menu aria-hidden size={18} />
         </button>
-        <a className="sidebar__brand" href="/" aria-label="OmniRoute home">
+        <a className="sidebar__brand" href="/" aria-label="Somnia Markets home">
           <span className="brand__mark" aria-hidden>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <circle cx="3.5" cy="3.5" r="2" fill="#fff" />

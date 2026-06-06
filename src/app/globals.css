@@ -1334,7 +1334,7 @@ textarea:focus {
   color: var(--color-grey-600);
 }
 
-.settlement-note {
+.receipt-note {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1347,7 +1347,7 @@ textarea:focus {
   font-size: 0.72rem;
 }
 
-.settlement-note--muted {
+.receipt-note--muted {
   background: var(--color-grey-100);
   flex-wrap: wrap;
 }
@@ -2271,7 +2271,7 @@ textarea:focus {
     min-height: 52px;
   }
 
-  .settlement-note {
+  .receipt-note {
     align-items: flex-start;
     flex-direction: column;
   }
@@ -2622,6 +2622,91 @@ textarea:focus {
 
 .dashboard-layout .pulse-dot {
   background: var(--squid-status-positive);
+}
+
+.market-console {
+  width: 100%;
+  min-height: 100dvh;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: auto;
+  color: var(--squid-grey-300);
+  background: var(--squid-grey-900);
+}
+
+.market-console__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(251, 251, 253, 0.08);
+  border-radius: 8px;
+  background: rgba(23, 25, 28, 0.96);
+}
+
+.market-console__head .cta {
+  flex: 0 0 auto;
+}
+
+.market-console__stats .stat {
+  min-width: 0;
+  min-height: 96px;
+  background: rgba(23, 25, 28, 0.96);
+  border: 1px solid rgba(251, 251, 253, 0.08);
+}
+
+.market-console__stats .stat__val {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.market-console__grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+}
+
+.market-console__action-input {
+  width: min(150px, 36vw);
+}
+
+.market-console__meta {
+  display: flex;
+  flex-flow: row wrap;
+  gap: 10px 16px;
+  color: var(--squid-grey-400);
+  font-size: 0.82rem;
+}
+
+.market-console__feedback {
+  position: sticky;
+  bottom: 12px;
+  align-self: flex-start;
+  max-width: min(920px, 100%);
+  padding: 10px 12px;
+  border: 1px solid rgba(251, 251, 253, 0.1);
+  border-radius: 8px;
+  background: rgba(23, 25, 28, 0.98);
+  color: var(--squid-grey-200);
+  box-shadow: var(--squid-shadow-container);
+  overflow-wrap: anywhere;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--squid-grey-400);
+  font-size: 0.84rem;
+}
+
+.check-row input {
+  width: 18px;
+  min-height: 18px;
+  flex: 0 0 auto;
 }
 
 /* Dashboard shell final layout */

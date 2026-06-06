@@ -2,12 +2,8 @@
   "chain": "somnia_testnet",
   "chainId": 50312,
   "explorer": "https://shannon-explorer.somnia.network",
-  "deployedAt": "2026-05-24T03:20:36Z",
+  "deployedAt": "2026-06-06T01:47:13Z",
   "addresses": {
-    "IdentityRegistry8004": "0x9FdF3029366685370a343Dd917bA90239420120e",
-    "SelfNullifierGate":    "0x8d089e5Cf981c8C36981ba1140Cc9FE68180D8b7",
-    "OmniRouteAgent":       "0x535352E64649783975d37E1dC0238F3bD0D57B33",
-    "OmniRouteEscrow":      "0xf9e56cC9A6c61637fE378f089842d0E778E7f20b",
-    "OmniRouteReactor":     "0xfbEec8d48A5ac3d7A2493B707B57344eb5f540C9"
+    "SomniaPredictionMarket": "0x157337Ee4373Ae2FA7bb2D609bB4EE7ecf0e7e78"
   }
 }

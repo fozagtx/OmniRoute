@@ -23,13 +23,13 @@ export default function StatusBar() {
             />
           </svg>
         </span>
-        <span className="brand__name">OmniRoute</span>
+        <span className="brand__name">Somnia Markets</span>
       </a>
 
       {onLanding && (
         <nav className="nav">
-          <a className="nav__link" href="#how">How it works</a>
-          <a className="nav__link" href="#compare">Compare</a>
+          <a className="nav__link" href="#how">Flow</a>
+          <a className="nav__link" href="#compare">Guardrails</a>
           <a className="nav__link" href="#faq">FAQ</a>
         </nav>
       )}

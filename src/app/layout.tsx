@@ -14,12 +14,12 @@ const RPC_HOST = SOMNIA_RPC.replace(/^https?:\/\//, "").replace(/\/$/, "");
 const BUILD_TAG = process.env.NODE_ENV === "production" ? "prod" : "dev";
 
 export const metadata: Metadata = {
-  title: "OmniRoute on Somnia",
+  title: "Somnia Market Console",
   description:
-    "Stablecoin escrow settlement on Somnia. Agents check public reference rates, then release or refund ERC-20 funds.",
+    "Agentic prediction-market execution and resolution console for Somnia.",
   openGraph: {
-    title: "OmniRoute",
-    description: "Stablecoin settlement with validator-verified reference rates",
+    title: "Somnia Market Console",
+    description: "Read market policy, execute positions, and inspect resolver receipts on Somnia.",
     type: "website",
   },
 };

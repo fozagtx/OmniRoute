@@ -9,15 +9,15 @@ export default function DashboardSidebar() {
 
   return (
     <div className="sidebar__nav" aria-label="Dashboard navigation">
-      <nav className="sidebar__group" aria-label="Transfer">
+      <nav className="sidebar__group" aria-label="Prediction market">
         <Link
           className={`sidebar__link ${pathname === "/dashboard" ? "sidebar__link--active" : ""}`}
           href="/dashboard"
         >
           <ArrowRightLeft className="sidebar__link-icon" aria-hidden size={16} />
           <span className="sidebar__link-title">
-            <span className="sidebar__label-full">Transfer</span>
-            <span className="sidebar__label-short">Transfer</span>
+            <span className="sidebar__label-full">Market</span>
+            <span className="sidebar__label-short">Market</span>
           </span>
         </Link>
         <Link
@@ -26,8 +26,8 @@ export default function DashboardSidebar() {
         >
           <Workflow className="sidebar__link-icon" aria-hidden size={16} />
           <span className="sidebar__link-title">
-            <span className="sidebar__label-full">Automations</span>
-            <span className="sidebar__label-short">Auto</span>
+            <span className="sidebar__label-full">Receipts</span>
+            <span className="sidebar__label-short">Logs</span>
           </span>
         </Link>
       </nav>

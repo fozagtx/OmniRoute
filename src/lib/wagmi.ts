@@ -6,8 +6,8 @@ const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID?.trim() ?? ""
 
 export const wagmiConfig = createConfig(
   getDefaultConfig({
-    appName: "OmniRoute",
-    appDescription: "Agentic liquidity router on Somnia",
+    appName: "Somnia Market Console",
+    appDescription: "Agentic prediction-market execution and resolution on Somnia",
     walletConnectProjectId: projectId,
     enableAaveAccount: false,
     chains: [somniaTestnet],

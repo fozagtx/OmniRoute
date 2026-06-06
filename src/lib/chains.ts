@@ -9,7 +9,7 @@ if (!SOMNIA_TESTNET_RPC) {
 export const somniaTestnet = defineChain({
   id: 50312,
   name: "Somnia Testnet",
-  nativeCurrency: { name: "Somnia", symbol: "SOMI", decimals: 18 },
+  nativeCurrency: { name: "Somnia Test Token", symbol: "STT", decimals: 18 },
   rpcUrls: {
     default: {
       http: [SOMNIA_TESTNET_RPC],
@@ -19,7 +19,7 @@ export const somniaTestnet = defineChain({
   blockExplorers: {
     default: {
       name: "Somnia Explorer",
-      url: "https://explorer.testnet.somnia.network",
+      url: "https://shannon-explorer.somnia.network",
     },
   },
   testnet: true,

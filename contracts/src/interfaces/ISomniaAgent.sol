@@ -111,3 +111,30 @@ interface ILLMInferenceAgent {
         bool chainOfThought
     ) external returns (string memory response);
 }
+
+/// @notice Somnia LLM Parse Website base agent. Signatures sourced from
+///         docs.somnia.network/agents/base-agents/llm-parse-website.
+interface IParseWebsiteAgent {
+    function ExtractANumber(
+        string calldata key,
+        string calldata description,
+        uint256 min,
+        uint256 max,
+        string calldata prompt,
+        string calldata url,
+        bool resolveUrl,
+        uint8 numPages,
+        uint8 confidenceThreshold
+    ) external returns (uint256 output);
+
+    function ExtractString(
+        string calldata key,
+        string calldata description,
+        string[] calldata options,
+        string calldata prompt,
+        string calldata url,
+        bool resolveUrl,
+        uint8 numPages,
+        uint8 confidenceThreshold
+    ) external returns (string memory output);
+}

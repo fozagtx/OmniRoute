@@ -18,23 +18,22 @@ export default function Landing() {
 
   return (
     <main className="landing">
-      {/* ───────────────────────── 1 · HERO ───────────────────────── */}
       <section className="hero">
         <div className="hero__inner">
           <div className="hero__copy">
             <h1 className="hero__title">
-              Stablecoin settlement <em>with verified rates.</em>
+              Agentic prediction markets <em>on Somnia.</em>
             </h1>
             <p className="hero__sub">
-              Lock ERC-20 funds, check a public reference rate through Somnia
-              Agents, then release through the configured settlement vault or
-              refund automatically.
+              Create native STT markets, scope execution policy, request Somnia
+              agent resolution, and inspect contract logs from the same deployed
+              surface.
             </p>
             <div className="hero__cta">
               <ConnectKitButton.Custom>
                 {({ show }) => (
                   <button className="cta" onClick={show}>
-                    Start settlement
+                    Open market console
                   </button>
                 )}
               </ConnectKitButton.Custom>
@@ -49,142 +48,125 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ───────────────────────── 3 · PROBLEM ───────────────────────── */}
       <section className="section">
         <div className="sectionHead">
-          <span className="eyebrow">the status quo</span>
-          <h2 className="sectionTitle">Stablecoin settlement still depends on trust.</h2>
+          <span className="eyebrow">the hard part</span>
+          <h2 className="sectionTitle">Prediction markets fail when resolution is theatrical.</h2>
         </div>
         <div className="cardGrid">
           <ProblemCard
-            title="Reference rates live off-chain"
-            body="Teams agree to a rate in chat, spreadsheets, or a private desk. When settlement happens later, nobody has a neutral on-chain record of the number used."
-            fix="the rate source and accepted quote are recorded on-chain"
+            title="Policy hides outside the market"
+            body="If the rule, market identifier, or resolver target lives only in app state, the interface proves little about the protocol."
+            fix="the console reads market and policy state from the configured contract"
           />
           <ProblemCard
-            title="One side has to move first"
-            body="Escrow terms are usually enforced by people or private systems. One party releases funds, then waits for the other side to honor the rate."
-            fix="funds release only when the verified rate clears the minimum"
+            title="Execution drifts from authority"
+            body="A position must be tied to wallet stake, native credit, or a scoped policy that the contract enforces."
+            fix="every action is submitted through the deployed market contract"
           />
           <ProblemCard
-            title="Bad quotes create manual cleanup"
-            body="If the rate source fails, drifts, or returns a value outside the agreed range, teams need manual dispute handling and reconciliation."
-            fix="set a minimum up front; refund if it isn't met"
+            title="Resolution lacks evidence"
+            body="A winning outcome is noise unless the receipt and logs can be traced to the resolver path that produced it."
+            fix="resolver output is stored on-chain and paired with receipt metadata"
           />
         </div>
       </section>
 
-      {/* ───────────────────────── 4 · SOLUTION ───────────────────────── */}
       <section className="section" id="how">
         <div className="sectionHead">
-          <span className="eyebrow">how settlement clears</span>
-          <h2 className="sectionTitle">Lock. Check. Release or refund.</h2>
+          <span className="eyebrow">flow</span>
+          <h2 className="sectionTitle">Read. Execute. Resolve.</h2>
         </div>
         <div className="cardGrid">
           <SolutionCard
             n="01"
-            title="Lock"
-            metric="1 transaction · 1 approval"
-            body="The sender approves the token and submits settlement terms. The contract holds the funds in escrow and asks the network for the reference rate."
+            title="Create market"
+            metric="contract transaction"
+            body="Submit the question, evidence URL, close time, and Parse Website instructions to the deployed market."
           />
           <SolutionCard
             n="02"
-            title="Decide"
-            metric="5 validators · 3-of-5 quorum · 30s timeout"
-            body="The Somnia Agent request reads the public rate source and returns a quorum-checked result before escrow release."
+            title="Scope execution"
+            metric="wallet transaction"
+            body="Fund native credit, create a bounded policy, then stake directly or let the authorized executor act inside the cap."
           />
           <SolutionCard
             n="03"
-            title="Release or refund"
-            metric="receipt on-chain · refund is automatic"
-            body="Clear the minimum and funds release through the configured settlement vault with an on-chain receipt. Miss it and the sender is refunded."
+            title="Resolve outcome"
+            metric="agent callback"
+            body="After market close, request Somnia LLM Parse Website resolution and read the stored outcome from contract state."
           />
         </div>
       </section>
 
-      {/* ───────────────────────── 5 · DIFFERENTIATORS ───────────────────────── */}
       <section className="section" id="compare">
         <div className="sectionHead">
-          <span className="eyebrow">why not just…</span>
-          <h2 className="sectionTitle">You already have options. Here is the difference.</h2>
+          <span className="eyebrow">guardrail</span>
+          <h2 className="sectionTitle">The console is deliberately strict.</h2>
         </div>
         <div className="cardGrid">
           <DiffCard
-            vs="vs. manual OTC settlement"
-            body="Teams agree on terms off-chain, then rely on screenshots, chats, or a private desk to prove the rate."
-            edge="OmniRoute records the source, rate, and settlement result on-chain."
+            vs="empty state stays empty"
+            body="Empty state means empty state. If the chain or endpoint has no data, the interface says so plainly."
+            edge="Visible rows come from contract calls or logs."
           />
           <DiffCard
-            vs="vs. a private treasury tool"
-            body="Internal systems can enforce policy, but counterparties cannot independently verify what happened."
-            edge="The settlement rule is public, and the receipt is visible to both sides."
+            vs="one contract surface"
+            body="The deploy script, ABI binding, and dashboard all target SomniaPredictionMarket."
+            edge="A wrong address blocks writes because the read calls cannot resolve."
           />
           <DiffCard
-            vs="vs. an AMM with a price feed"
-            body="The feed is fast, but it is still a single external provider, and pool execution can slip outside the agreed terms."
-            edge="The rate is checked through a Somnia Agent request, with an automatic refund if it misses your minimum."
+            vs="no identity detour"
+            body="Wallet connection gates transactions only. Market policy, execution, and resolution remain the visible product path."
+            edge="Identity scaffolding is not presented as market evidence."
           />
         </div>
       </section>
 
-      {/* ───────────────────────── 6 · FAQ ───────────────────────── */}
       <section className="section" id="faq">
         <div className="sectionHead">
-          <span className="eyebrow">before you trust settlement</span>
-          <h2 className="sectionTitle">Questions you're probably asking.</h2>
+          <span className="eyebrow">before execution</span>
+          <h2 className="sectionTitle">Questions that change the outcome.</h2>
         </div>
         <div className="faqList">
-          <Faq q="What does it cost?">
-            On testnet, settlement uses STT for gas and Somnia Agent request
-            fees.
+          <Faq q="What must be configured?">
+            A deployed `NEXT_PUBLIC_PREDICTION_MARKET_ADDRESS` is required for
+            the dashboard contract reads and writes.
           </Faq>
-          <Faq q="Do I need a crypto wallet to use this?">
-            Yes. The current product is an EVM escrow flow. The sender connects
-            a wallet, approves an ERC-20, and submits settlement terms.
+          <Faq q="Where does trade state live?">
+            In `SomniaPredictionMarket`: markets, policies, native credit,
+            positions, requests, receipts, and claims are contract state or
+            emitted events.
           </Faq>
-          <Faq q="What assets and pairs are supported?">
-            The contract accepts ERC-20 tokens and a settlement pair string. The
-            pair describes the reference rate being checked before escrow release.
+          <Faq q="Where does resolution data come from?">
+            From the Somnia LLM Parse Website agent callback. The contract
+            stores the output, response status, request id, and receipt id.
           </Faq>
-          <Faq q="How fast does settlement clear?">
-            Escrow release happens after the Somnia Agent request returns a
-            valid rate response, assuming the rate source responds inside the
-            timeout.
-          </Faq>
-          <Faq q="What happens if the rate moves before it settles?">
-            You set a minimum settlement output when you submit. If the
-            agent-returned rate would release less than that minimum, the
-            contract refunds the sender.
-          </Faq>
-          <Faq q="Where does the FX rate actually come from?">
-            A public JSON source you specify when submitting settlement terms.
-            Somnia Agents read that source and return the reference value used
-            by the escrow. No private feed, no off-chain keeper.
+          <Faq q="What logs are loaded?">
+            Contract logs emitted by the configured market over the latest
+            Somnia blocks returned by RPC.
           </Faq>
         </div>
       </section>
 
-      {/* ───────────────────────── 7 · FINAL CTA ───────────────────────── */}
       <section className="finalCta">
-        <span className="eyebrow">stop trusting the desk</span>
-        <h2 className="finalCta__title">
-          Settle stablecoins against a rate both sides can verify.
-        </h2>
+        <span className="eyebrow">no masquerade</span>
+        <h2 className="finalCta__title">Run the market path against real inputs.</h2>
         <p className="finalCta__sub">
-          You submit terms. The agent request returns the rate. Funds release
-          through the configured settlement vault or return to the sender. Either
-          way, the decision is on-chain.
+          Configure the market contract, execute through your wallet, then
+          inspect resolver state and on-chain logs. Missing chain data remains
+          visibly absent.
         </p>
         <div className="finalCta__row">
           <ConnectKitButton.Custom>
             {({ show }) => (
               <button className="cta" onClick={show}>
-                Start settlement
+                Open market console
               </button>
             )}
           </ConnectKitButton.Custom>
           <a className="cta cta--ghost" href="#how">
-            How it settles
+            Review flow
           </a>
         </div>
       </section>
@@ -192,16 +174,16 @@ export default function Landing() {
   );
 }
 
-/* ───────────────────────── components ───────────────────────── */
-
 function ProblemCard({ title, body, fix }: { title: string; body: string; fix: string }) {
   return (
     <article className="card">
-      <span className="card__mark card__mark--bad" aria-hidden>✗</span>
+      <span className="card__mark card__mark--bad" aria-hidden>
+        x
+      </span>
       <h3 className="card__title">{title}</h3>
       <p className="card__body">{body}</p>
       <div className="card__fix">
-        <b>With OmniRoute:</b> {fix}
+        <b>Console rule:</b> {fix}
       </div>
     </article>
   );
@@ -210,7 +192,9 @@ function ProblemCard({ title, body, fix }: { title: string; body: string; fix: s
 function SolutionCard({ n, title, metric, body }: { n: string; title: string; metric: string; body: string }) {
   return (
     <article className="card">
-      <span className="card__mark card__mark--num" aria-hidden>{n}</span>
+      <span className="card__mark card__mark--num" aria-hidden>
+        {n}
+      </span>
       <h3 className="card__title">{title}</h3>
       <span className="card__metric">{metric}</span>
       <p className="card__body">{body}</p>
@@ -220,11 +204,11 @@ function SolutionCard({ n, title, metric, body }: { n: string; title: string; me
 
 function DiffCard({ vs, body, edge }: { vs: string; body: string; edge: string }) {
   return (
-    <article className="card">
-      <span className="card__metric">{vs}</span>
+    <article className="card card--diff">
+      <span className="eyebrow">{vs}</span>
       <p className="card__body">{body}</p>
       <div className="card__fix">
-        <b>OmniRoute:</b> {edge}
+        <b>Market console:</b> {edge}
       </div>
     </article>
   );
@@ -233,11 +217,8 @@ function DiffCard({ vs, body, edge }: { vs: string; body: string; edge: string }
 function Faq({ q, children }: { q: string; children: React.ReactNode }) {
   return (
     <details className="faq">
-      <summary>
-        {q}
-        <span className="faq__plus" aria-hidden>+</span>
-      </summary>
-      <div className="faq__answer">{children}</div>
+      <summary>{q}</summary>
+      <p>{children}</p>
     </details>
   );
 }

@@ -47,18 +47,18 @@ export default function LayoutShell({
                     />
                   </svg>
                 </span>
-                <span className="brand__name">OmniRoute</span>
+                <span className="brand__name">Somnia Markets</span>
               </span>
               <p className="footer__tagline">
-                Stablecoin escrow settled against public reference rates — no
-                private desk, no manual release.
+                Prediction-market execution and resolver receipts on Somnia,
+                backed by contract state and RPC logs.
               </p>
             </div>
 
             <nav className="footer__col" aria-label="Product">
               <span className="footer__head">Product</span>
-              <a href="/#how">How it works</a>
-              <a href="/#compare">Compare</a>
+              <a href="/#how">Flow</a>
+              <a href="/#compare">Guardrails</a>
               <a href="/#faq">FAQ</a>
             </nav>
 
@@ -84,7 +84,7 @@ export default function LayoutShell({
           </div>
 
           <div className="footer__bottom">
-            <span>© 2026 OmniRoute</span>
+            <span>© 2026 Somnia Markets</span>
             <span className="footer__muted">
               build {buildTag} · somnia agents
             </span>

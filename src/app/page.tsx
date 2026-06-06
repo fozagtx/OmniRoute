@@ -197,7 +197,7 @@ export default function Home() {
             <span className="agent-footer__contract">{contractAddress}</span>
           </div>
           <Link className="agent-footer__link" href="/dashboard">
-            Open app
+            Dashboard
           </Link>
         </footer>
       </div>

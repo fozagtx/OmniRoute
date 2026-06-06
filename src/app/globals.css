@@ -2163,8 +2163,26 @@ textarea:focus {
   color: var(--market-grey-400);
 }
 
+.wallet-gate__actions {
+  display: flex;
+  flex-flow: row wrap;
+  gap: 10px;
+}
+
 .wallet-gate__button {
   justify-self: start;
+}
+
+.wallet-gate__error {
+  margin: 0;
+  color: var(--market-status-negative);
+  font-size: 0.84rem;
+  overflow-wrap: anywhere;
+}
+
+.sidebar__wallet:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @media (max-width: 900px) {

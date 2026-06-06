@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { ConnectKitButton } from "connectkit";
 import { Menu } from "lucide-react";
-import { useAccount } from "wagmi";
+import { useWallet } from "@/lib/wallet";
 
 export default function DashboardLayout({
   children,
@@ -14,7 +13,8 @@ export default function DashboardLayout({
   sidebar: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const { isConnected } = useAccount();
+  const { address, connect, disconnect, error, isConnected, isConnecting } = useWallet();
+  const walletLabel = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Wallet";
 
   return (
     <div className={`dashboard-layout ${open ? "dashboard-layout--expanded" : "dashboard-layout--collapsed"}`}>
@@ -43,19 +43,16 @@ export default function DashboardLayout({
         <div className="sidebar__children">{isConnected ? sidebar : null}</div>
 
         <div className="sidebar__footer">
-          <ConnectKitButton.Custom>
-            {({ isConnected, show, truncatedAddress }) => (
-              <button
-                type="button"
-                className="sidebar__wallet"
-                aria-label={isConnected ? `Wallet ${truncatedAddress}` : "Connect wallet"}
-                onClick={show}
-              >
-                <span className="sidebar__wallet-dot" aria-hidden />
-                <span className="sidebar__wallet-label">{isConnected ? truncatedAddress : "Wallet"}</span>
-              </button>
-            )}
-          </ConnectKitButton.Custom>
+          <button
+            type="button"
+            className="sidebar__wallet"
+            aria-label={isConnected ? `Disconnect wallet ${walletLabel}` : "Connect wallet"}
+            disabled={!isConnected && isConnecting}
+            onClick={() => (isConnected ? disconnect() : void connect())}
+          >
+            <span className="sidebar__wallet-dot" data-connected={isConnected ? "true" : "false"} aria-hidden />
+            <span className="sidebar__wallet-label">{isConnected ? walletLabel : "Wallet"}</span>
+          </button>
         </div>
       </aside>
 
@@ -71,13 +68,10 @@ export default function DashboardLayout({
                 Required to view live Somnia market state and submit contract
                 transactions.
               </p>
-              <ConnectKitButton.Custom>
-                {({ show }) => (
-                  <button type="button" className="cta wallet-gate__button" onClick={show}>
-                    Connect wallet
-                  </button>
-                )}
-              </ConnectKitButton.Custom>
+              <button type="button" className="cta wallet-gate__button" disabled={isConnecting} onClick={() => void connect()}>
+                {isConnecting ? "Connecting" : "Connect wallet"}
+              </button>
+              {error ? <p className="wallet-gate__error">{error}</p> : null}
             </div>
           </section>
         )}

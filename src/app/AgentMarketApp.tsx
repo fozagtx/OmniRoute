@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ExternalLink, Plus, ShieldCheck, WalletCards } from "lucide-react";
 import { formatEther, isAddress, parseEther, type Address } from "viem";
-import { useAccount, usePublicClient, useReadContract, useWriteContract } from "wagmi";
 import {
   marketStatusLabels,
   predictionMarketAbi,
@@ -12,6 +11,7 @@ import {
   sideLabels,
   somniaReceiptsBaseUrl,
 } from "@/lib/predictionMarket";
+import { useWallet } from "@/lib/wallet";
 
 type MarketContractTuple = readonly [
   Address,
@@ -48,6 +48,12 @@ type MarketRow = {
 };
 
 type ActiveMarketTask = "trade" | "resolve" | "create" | "policy";
+
+type WriteContractInput = {
+  functionName: string;
+  args?: readonly unknown[];
+  value?: bigint;
+};
 
 const marketSourcePresets = [
   {
@@ -119,9 +125,8 @@ function labelFrom<T extends readonly string[]>(labels: T, value: number | bigin
 }
 
 export default function AgentMarketApp() {
-  const { address, isConnected } = useAccount();
-  const publicClient = usePublicClient();
-  const { writeContractAsync, isPending } = useWriteContract();
+  const { address, isConnected, publicClient, walletClient } = useWallet();
+  const [isPending, setIsPending] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [activeTask, setActiveTask] = useState<ActiveMarketTask>("trade");
 
@@ -149,6 +154,12 @@ export default function AgentMarketApp() {
   const [policyAmount, setPolicyAmount] = useState("");
 
   const [feedback, setFeedback] = useState("");
+  const [marketCount, setMarketCount] = useState<bigint>();
+  const [nativeCredit, setNativeCredit] = useState<bigint>();
+  const [selectedMarket, setSelectedMarket] = useState<MarketContractTuple>();
+  const [marketPools, setMarketPools] = useState<readonly [bigint, bigint]>();
+  const [position, setPosition] = useState<readonly [bigint, bigint]>();
+  const [resolutionCost, setResolutionCost] = useState<bigint>();
   const [marketRows, setMarketRows] = useState<MarketRow[]>([]);
   const [marketsError, setMarketsError] = useState("");
   const [marketsLoading, setMarketsLoading] = useState(false);
@@ -160,53 +171,75 @@ export default function AgentMarketApp() {
     return Number.isInteger(parsed) && parsed > 0 ? BigInt(parsed) : undefined;
   }, [marketId]);
 
-  const { data: quoteCost } = useReadContract({
-    address: predictionMarketAddress,
-    abi: predictionMarketAbi,
-    functionName: "quoteResolutionCost",
-    query: { enabled: contractEnabled },
-  });
+  const loadContractSnapshot = useCallback(async () => {
+    if (!predictionMarketAddress) return undefined;
 
-  const { data: marketCount } = useReadContract({
-    address: predictionMarketAddress,
-    abi: predictionMarketAbi,
-    functionName: "marketCount",
-    query: { enabled: contractEnabled },
-  });
+    const [quote, count] = await Promise.all([
+      publicClient.readContract({
+        address: predictionMarketAddress,
+        abi: predictionMarketAbi,
+        functionName: "quoteResolutionCost",
+      }),
+      publicClient.readContract({
+        address: predictionMarketAddress,
+        abi: predictionMarketAbi,
+        functionName: "marketCount",
+      }),
+    ]);
 
-  const { data: nativeCredit } = useReadContract({
-    address: predictionMarketAddress,
-    abi: predictionMarketAbi,
-    functionName: "nativeCredits",
-    args: address ? [address] : undefined,
-    query: { enabled: contractEnabled && Boolean(address) },
-  });
+    setResolutionCost((quote as readonly [bigint, bigint, bigint])[2]);
+    setMarketCount(count as bigint);
 
-  const { data: selectedMarket } = useReadContract({
-    address: predictionMarketAddress,
-    abi: predictionMarketAbi,
-    functionName: "markets",
-    args: marketIdForRead ? [marketIdForRead] : undefined,
-    query: { enabled: contractEnabled && Boolean(marketIdForRead) },
-  });
+    if (address) {
+      const credit = (await publicClient.readContract({
+        address: predictionMarketAddress,
+        abi: predictionMarketAbi,
+        functionName: "nativeCredits",
+        args: [address],
+      })) as bigint;
+      setNativeCredit(credit);
+    } else {
+      setNativeCredit(undefined);
+    }
 
-  const { data: marketPools } = useReadContract({
-    address: predictionMarketAddress,
-    abi: predictionMarketAbi,
-    functionName: "marketPools",
-    args: marketIdForRead ? [marketIdForRead] : undefined,
-    query: { enabled: contractEnabled && Boolean(marketIdForRead) },
-  });
+    return count as bigint;
+  }, [address, publicClient]);
 
-  const { data: position } = useReadContract({
-    address: predictionMarketAddress,
-    abi: predictionMarketAbi,
-    functionName: "positionOf",
-    args: marketIdForRead && address ? [marketIdForRead, address] : undefined,
-    query: { enabled: contractEnabled && Boolean(marketIdForRead && address) },
-  });
+  const loadSelectedMarket = useCallback(async () => {
+    if (!predictionMarketAddress || !marketIdForRead) {
+      setSelectedMarket(undefined);
+      setMarketPools(undefined);
+      setPosition(undefined);
+      return;
+    }
 
-  const resolutionCost = quoteCost?.[2];
+    const [market, pools, userPosition] = await Promise.all([
+      publicClient.readContract({
+        address: predictionMarketAddress,
+        abi: predictionMarketAbi,
+        functionName: "markets",
+        args: [marketIdForRead],
+      }),
+      publicClient.readContract({
+        address: predictionMarketAddress,
+        abi: predictionMarketAbi,
+        functionName: "marketPools",
+        args: [marketIdForRead],
+      }),
+      address
+        ? publicClient.readContract({
+            address: predictionMarketAddress,
+            abi: predictionMarketAbi,
+            functionName: "positionOf",
+            args: [marketIdForRead, address],
+          })
+        : undefined,
+    ]);
+
+    setSelectedMarket(market as MarketContractTuple);
+    setMarketPools(pools as readonly [bigint, bigint]);
+    setPosition(userPosition as readonly [bigint, bigint] | undefined);
+  }, [address, marketIdForRead, publicClient]);
 
   const loadMarkets = useCallback(
     async (countValue = marketCount) => {
@@ -262,8 +295,12 @@ export default function AgentMarketApp() {
   }, []);
 
   useEffect(() => {
-    void loadMarkets();
-  }, [loadMarkets]);
+    void loadContractSnapshot().then((count) => loadMarkets(count));
+  }, [loadContractSnapshot, loadMarkets]);
+
+  useEffect(() => {
+    void loadSelectedMarket();
+  }, [loadSelectedMarket]);
 
   useEffect(() => {
     if (!marketId && marketRows[0]) {
@@ -285,6 +322,27 @@ export default function AgentMarketApp() {
     setResolveUrl(source.resolveUrl);
     setNumPages(String(source.numPages));
     setConfidenceThreshold(String(source.confidenceThreshold));
+  }
+
+  async function writeMarketContract({ args, functionName, value }: WriteContractInput) {
+    if (!predictionMarketAddress || !walletClient || !address) {
+      throw new Error("Connect a wallet first.");
+    }
+
+    setIsPending(true);
+    try {
+      const hash = await walletClient.writeContract({
+        account: address,
+        address: predictionMarketAddress,
+        abi: predictionMarketAbi,
+        functionName,
+        args,
+        value,
+      } as unknown as Parameters<typeof walletClient.writeContract>[0]);
+      return await publicClient.waitForTransactionReceipt({ hash });
+    } finally {
+      setIsPending(false);
+    }
   }
 
   async function onCreateMarket(event: React.FormEvent) {
@@ -310,22 +368,20 @@ export default function AgentMarketApp() {
       if (confidence > 100) throw new Error("Confidence threshold must be 100 or less.");
       const closeTime = BigInt(Math.floor(Date.now() / 1000) + days * 86_400);
 
-      const hash = await writeContractAsync({
-        address: predictionMarketAddress,
-        abi: predictionMarketAbi,
+      const receipt = await writeMarketContract({
         functionName: "createMarket",
         args: [question.trim(), resolutionPrompt.trim(), evidenceUrl.trim(), closeTime, resolveUrl, pages, confidence],
       });
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
       const nextMarketCount = await publicClient.readContract({
         address: predictionMarketAddress,
         abi: predictionMarketAbi,
         functionName: "marketCount",
       });
+      setMarketCount(nextMarketCount as bigint);
       setMarketId(nextMarketCount.toString());
       setActiveTask("trade");
       setFeedback(`Market created in block ${receipt.blockNumber.toString()}.`);
-      await loadMarkets(nextMarketCount);
+      await loadMarkets(nextMarketCount as bigint);
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Market transaction failed.");
     }
@@ -354,13 +410,10 @@ export default function AgentMarketApp() {
       const days = parsePositiveInteger(policyExpiryDays, "Policy expiry days");
       const expiresAt = BigInt(Math.floor(Date.now() / 1000) + days * 86_400);
 
-      const hash = await writeContractAsync({
-        address: predictionMarketAddress,
-        abi: predictionMarketAbi,
+      const receipt = await writeMarketContract({
         functionName: "createPolicy",
         args: [executorAddress as Address, side, maxStakePerAction, maxTotal, expiresAt],
       });
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
       const nextPolicyCount = await publicClient.readContract({
         address: predictionMarketAddress,
         abi: predictionMarketAbi,
@@ -368,6 +421,7 @@ export default function AgentMarketApp() {
       });
       setPolicyId(nextPolicyCount.toString());
       setFeedback(`Policy created in block ${receipt.blockNumber.toString()}.`);
+      await loadContractSnapshot();
       await loadMarkets();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Policy transaction failed.");
@@ -387,14 +441,12 @@ export default function AgentMarketApp() {
 
     try {
       const value = parseNativeAmount(creditAmount, "Credit amount");
-      const hash = await writeContractAsync({
-        address: predictionMarketAddress,
-        abi: predictionMarketAbi,
+      const receipt = await writeMarketContract({
         functionName: "depositCredit",
         value,
       });
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
       setFeedback(`Credit deposited in block ${receipt.blockNumber.toString()}.`);
+      await loadContractSnapshot();
       await loadMarkets();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Credit deposit failed.");
@@ -414,14 +466,12 @@ export default function AgentMarketApp() {
 
     try {
       const amount = parseNativeAmount(creditAmount, "Credit amount");
-      const hash = await writeContractAsync({
-        address: predictionMarketAddress,
-        abi: predictionMarketAbi,
+      const receipt = await writeMarketContract({
         functionName: "withdrawCredit",
         args: [amount],
       });
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
       setFeedback(`Credit withdrawn in block ${receipt.blockNumber.toString()}.`);
+      await loadContractSnapshot();
       await loadMarkets();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Credit withdrawal failed.");
@@ -441,14 +491,12 @@ export default function AgentMarketApp() {
 
     try {
       const parsedPolicyId = parsePositiveInteger(policyId, "Policy ID");
-      const hash = await writeContractAsync({
-        address: predictionMarketAddress,
-        abi: predictionMarketAbi,
+      const receipt = await writeMarketContract({
         functionName: "disablePolicy",
         args: [BigInt(parsedPolicyId)],
       });
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
       setFeedback(`Policy disabled in block ${receipt.blockNumber.toString()}.`);
+      await loadContractSnapshot();
       await loadMarkets();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Policy disable failed.");
@@ -470,16 +518,15 @@ export default function AgentMarketApp() {
       const parsedMarketId = parsePositiveInteger(marketId, "Market ID");
       const side = parseSide(stakeSide, "Stake side");
       const value = parseNativeAmount(stakeAmount, "Stake amount");
-      const hash = await writeContractAsync({
-        address: predictionMarketAddress,
-        abi: predictionMarketAbi,
+      const receipt = await writeMarketContract({
         functionName: "stake",
         value,
         args: [BigInt(parsedMarketId), side],
       });
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
       setFeedback(`Stake recorded in block ${receipt.blockNumber.toString()}.`);
+      await loadContractSnapshot();
       await loadMarkets();
+      await loadSelectedMarket();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Stake transaction failed.");
     }
@@ -500,15 +547,14 @@ export default function AgentMarketApp() {
       const parsedMarketId = parsePositiveInteger(marketId, "Market ID");
       const side = parseSide(stakeSide, "Stake side");
       const amount = parseNativeAmount(stakeAmount, "Stake amount");
-      const hash = await writeContractAsync({
-        address: predictionMarketAddress,
-        abi: predictionMarketAbi,
+      const receipt = await writeMarketContract({
         functionName: "stakeFromCredit",
         args: [BigInt(parsedMarketId), side, amount],
       });
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
       setFeedback(`Credit stake recorded in block ${receipt.blockNumber.toString()}.`);
+      await loadContractSnapshot();
       await loadMarkets();
+      await loadSelectedMarket();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Credit stake failed.");
     }
@@ -530,15 +576,14 @@ export default function AgentMarketApp() {
       const parsedMarketId = parsePositiveInteger(marketId, "Market ID");
       const side = parseSide(policySide, "Policy side");
       const amount = parseNativeAmount(policyAmount, "Policy amount");
-      const hash = await writeContractAsync({
-        address: predictionMarketAddress,
-        abi: predictionMarketAbi,
+      const receipt = await writeMarketContract({
         functionName: "executePolicy",
         args: [BigInt(parsedPolicyId), BigInt(parsedMarketId), side, amount],
       });
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
       setFeedback(`Policy execution recorded in block ${receipt.blockNumber.toString()}.`);
+      await loadContractSnapshot();
       await loadMarkets();
+      await loadSelectedMarket();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Policy execution failed.");
     }
@@ -561,16 +606,15 @@ export default function AgentMarketApp() {
 
     try {
       const parsedMarketId = parsePositiveInteger(marketId, "Market ID");
-      const hash = await writeContractAsync({
-        address: predictionMarketAddress,
-        abi: predictionMarketAbi,
+      const receipt = await writeMarketContract({
         functionName: "requestResolution",
         value: resolutionCost,
         args: [BigInt(parsedMarketId)],
       });
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
       setFeedback(`Resolution requested in block ${receipt.blockNumber.toString()}.`);
+      await loadContractSnapshot();
       await loadMarkets();
+      await loadSelectedMarket();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Resolution request failed.");
     }
@@ -589,15 +633,14 @@ export default function AgentMarketApp() {
 
     try {
       const parsedMarketId = parsePositiveInteger(marketId, "Market ID");
-      const hash = await writeContractAsync({
-        address: predictionMarketAddress,
-        abi: predictionMarketAbi,
+      const receipt = await writeMarketContract({
         functionName: "claim",
         args: [BigInt(parsedMarketId)],
       });
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
       setFeedback(`Claim submitted in block ${receipt.blockNumber.toString()}.`);
+      await loadContractSnapshot();
       await loadMarkets();
+      await loadSelectedMarket();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Claim failed.");
     }

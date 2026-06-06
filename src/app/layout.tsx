@@ -5,10 +5,10 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Somnia Markets",
   description:
-    "Create markets, stake positions, request resolution, and inspect resolver receipts on Somnia.",
+    "Create source-bound markets, stake STT, request Somnia agent resolution, and claim payouts on-chain.",
   openGraph: {
     title: "Somnia Markets",
-    description: "Create markets, stake positions, request resolution, and inspect resolver receipts on Somnia.",
+    description: "Create source-bound markets, stake STT, request Somnia agent resolution, and claim payouts on-chain.",
     type: "website",
   },
 };

@@ -25,6 +25,32 @@ type LogRow = {
   href?: string;
 };
 
+const marketSourcePresets = [
+  {
+    id: "somnia-agents-docs",
+    label: "Somnia Agents docs",
+    question: "Does the Somnia Agents documentation page describe Somnia Agents?",
+    resolutionPrompt: "Return exactly YES if the page describes Somnia Agents, otherwise return NO.",
+    evidenceUrl: "https://docs.somnia.network/agents",
+    resolveUrl: false,
+    numPages: 1,
+    confidenceThreshold: 70,
+  },
+  {
+    id: "somnia-market-explorer",
+    label: "Market contract explorer",
+    question: "Does the Shannon explorer page show the deployed SomniaPredictionMarket contract?",
+    resolutionPrompt:
+      "Return exactly YES if the page is for contract 0x157337Ee4373Ae2FA7bb2D609bB4EE7ecf0e7e78, otherwise return NO.",
+    evidenceUrl: "https://shannon-explorer.somnia.network/address/0x157337Ee4373Ae2FA7bb2D609bB4EE7ecf0e7e78",
+    resolveUrl: false,
+    numPages: 1,
+    confidenceThreshold: 70,
+  },
+] as const;
+
+const defaultMarketSource = marketSourcePresets[0];
+
 function shortAddress(value?: string) {
   if (!value) return "not read";
   return `${value.slice(0, 6)}...${value.slice(-4)}`;
@@ -81,13 +107,14 @@ export default function AgentMarketConsole() {
   const { writeContractAsync, isPending } = useWriteContract();
   const [revealed, setRevealed] = useState(false);
 
-  const [question, setQuestion] = useState("");
-  const [resolutionPrompt, setResolutionPrompt] = useState("");
-  const [evidenceUrl, setEvidenceUrl] = useState("");
-  const [closeDays, setCloseDays] = useState("");
-  const [resolveUrl, setResolveUrl] = useState(false);
-  const [numPages, setNumPages] = useState("");
-  const [confidenceThreshold, setConfidenceThreshold] = useState("");
+  const [sourceId, setSourceId] = useState<string>(defaultMarketSource.id);
+  const [question, setQuestion] = useState<string>(defaultMarketSource.question);
+  const [resolutionPrompt, setResolutionPrompt] = useState<string>(defaultMarketSource.resolutionPrompt);
+  const [evidenceUrl, setEvidenceUrl] = useState<string>(defaultMarketSource.evidenceUrl);
+  const [closeDays, setCloseDays] = useState("7");
+  const [resolveUrl, setResolveUrl] = useState(defaultMarketSource.resolveUrl);
+  const [numPages, setNumPages] = useState(String(defaultMarketSource.numPages));
+  const [confidenceThreshold, setConfidenceThreshold] = useState(String(defaultMarketSource.confidenceThreshold));
 
   const [executor, setExecutor] = useState("");
   const [creditAmount, setCreditAmount] = useState("");
@@ -358,6 +385,17 @@ export default function AgentMarketConsole() {
   useEffect(() => {
     void loadLogs();
   }, [loadLogs]);
+
+  function onSelectMarketSource(nextSourceId: string) {
+    const source = marketSourcePresets.find((item) => item.id === nextSourceId) ?? defaultMarketSource;
+    setSourceId(source.id);
+    setQuestion(source.question);
+    setResolutionPrompt(source.resolutionPrompt);
+    setEvidenceUrl(source.evidenceUrl);
+    setResolveUrl(source.resolveUrl);
+    setNumPages(String(source.numPages));
+    setConfidenceThreshold(String(source.confidenceThreshold));
+  }
 
   async function onCreateMarket(event: React.FormEvent) {
     event.preventDefault();
@@ -757,16 +795,30 @@ export default function AgentMarketConsole() {
           <div className="panel__body">
             <div className="form-grid">
               <label className="field field--wide">
+                <span className="label">Market source</span>
+                <select value={sourceId} onChange={(event) => onSelectMarketSource(event.target.value)}>
+                  {marketSourcePresets.map((source) => (
+                    <option key={source.id} value={source.id}>
+                      {source.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="field field--wide">
                 <span className="label">Question</span>
-                <input value={question} onChange={(event) => setQuestion(event.target.value)} />
+                <textarea value={question} readOnly rows={2} />
               </label>
               <label className="field field--wide">
                 <span className="label">Resolution prompt</span>
-                <input value={resolutionPrompt} onChange={(event) => setResolutionPrompt(event.target.value)} />
+                <textarea value={resolutionPrompt} readOnly rows={3} />
               </label>
               <label className="field field--wide">
-                <span className="label">Evidence URL or domain</span>
-                <input value={evidenceUrl} onChange={(event) => setEvidenceUrl(event.target.value)} />
+                <span className="label">Resolution source</span>
+                <div className="asset-readout">
+                  <a href={evidenceUrl} target="_blank" rel="noopener noreferrer">
+                    {evidenceUrl}
+                  </a>
+                </div>
               </label>
               <label className="field">
                 <span className="label">Close days</span>
@@ -774,23 +826,15 @@ export default function AgentMarketConsole() {
               </label>
               <label className="field">
                 <span className="label">Pages</span>
-                <input inputMode="numeric" value={numPages} onChange={(event) => setNumPages(event.target.value)} />
+                <input inputMode="numeric" value={numPages} readOnly />
               </label>
               <label className="field">
                 <span className="label">Confidence</span>
-                <input
-                  inputMode="numeric"
-                  value={confidenceThreshold}
-                  onChange={(event) => setConfidenceThreshold(event.target.value)}
-                />
-              </label>
-              <label className="check-row">
-                <input type="checkbox" checked={resolveUrl} onChange={(event) => setResolveUrl(event.target.checked)} />
-                <span>Search this domain for evidence</span>
+                <input inputMode="numeric" value={confidenceThreshold} readOnly />
               </label>
             </div>
             <div className="form-actions">
-              <span className="form-feedback">{contractEnabled ? "Ready for wallet submission." : "Market address not configured."}</span>
+              <span className="form-feedback">{contractEnabled ? "Source is configured by the app." : "Market address not configured."}</span>
               <button type="submit" className="cta" disabled={isPending || !contractEnabled}>
                 create market
               </button>

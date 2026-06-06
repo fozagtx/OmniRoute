@@ -308,9 +308,31 @@ export default function AgentMarketApp() {
     }
   }, [marketId, marketRows]);
 
+  useEffect(() => {
+    function syncHashTask() {
+      const nextTask = window.location.hash.replace("#market-task-", "");
+      if (nextTask === "trade" || nextTask === "resolve" || nextTask === "create" || nextTask === "policy") {
+        setActiveTask(nextTask);
+      }
+    }
+
+    syncHashTask();
+    window.addEventListener("hashchange", syncHashTask);
+    return () => window.removeEventListener("hashchange", syncHashTask);
+  }, []);
+
+  function activateTask(task: ActiveMarketTask) {
+    setActiveTask(task);
+    const nextHash = `#market-task-${task}`;
+    if (window.location.hash !== nextHash) {
+      history.replaceState(null, "", nextHash);
+      window.dispatchEvent(new HashChangeEvent("hashchange"));
+    }
+  }
+
   function selectMarket(id: number) {
     setMarketId(id.toString());
-    setActiveTask("trade");
+    activateTask("trade");
   }
 
   function onSelectMarketSource(nextSourceId: string) {
@@ -377,11 +399,12 @@ export default function AgentMarketApp() {
         abi: predictionMarketAbi,
         functionName: "marketCount",
       });
-      setMarketCount(nextMarketCount as bigint);
-      setMarketId(nextMarketCount.toString());
-      setActiveTask("trade");
+      const nextMarketCountValue = nextMarketCount as bigint;
+      setMarketCount(nextMarketCountValue);
+      setMarketId(nextMarketCountValue.toString());
+      activateTask("trade");
       setFeedback(`Market created in block ${receipt.blockNumber.toString()}.`);
-      await loadMarkets(nextMarketCount as bigint);
+      await loadMarkets(nextMarketCountValue);
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Market transaction failed.");
     }
@@ -419,7 +442,7 @@ export default function AgentMarketApp() {
         abi: predictionMarketAbi,
         functionName: "policyCount",
       });
-      setPolicyId(nextPolicyCount.toString());
+      setPolicyId((nextPolicyCount as bigint).toString());
       setFeedback(`Policy created in block ${receipt.blockNumber.toString()}.`);
       await loadContractSnapshot();
       await loadMarkets();
@@ -678,14 +701,12 @@ export default function AgentMarketApp() {
     >
       <header className="market-app__head market-app__head--compact">
         <div>
-          <p className="eyebrow">Somnia Markets</p>
-          <h1 className="display">Agent-watched markets</h1>
-          <p className="market-app__lede">Choose a live market, then run one action at a time.</p>
+          <h1 className="display">Markets</h1>
         </div>
       </header>
 
       <div className="market-workbench">
-        <section className="panel market-list-panel" aria-label="Markets">
+        <section className="panel market-list-panel" id="markets" aria-label="Markets">
           <div className="panel__head">
             <div>
               <p className="label">Markets</p>
@@ -795,7 +816,7 @@ export default function AgentMarketApp() {
                 role="tab"
                 aria-selected={activeTask === "trade"}
                 aria-controls="market-task-trade"
-                onClick={() => setActiveTask("trade")}
+                onClick={() => activateTask("trade")}
               >
                 Trade
               </button>
@@ -806,7 +827,7 @@ export default function AgentMarketApp() {
                 role="tab"
                 aria-selected={activeTask === "resolve"}
                 aria-controls="market-task-resolve"
-                onClick={() => setActiveTask("resolve")}
+                onClick={() => activateTask("resolve")}
               >
                 Resolve
               </button>
@@ -817,7 +838,7 @@ export default function AgentMarketApp() {
                 role="tab"
                 aria-selected={activeTask === "create"}
                 aria-controls="market-task-create"
-                onClick={() => setActiveTask("create")}
+                onClick={() => activateTask("create")}
               >
                 Create
               </button>
@@ -828,7 +849,7 @@ export default function AgentMarketApp() {
                 role="tab"
                 aria-selected={activeTask === "policy"}
                 aria-controls="market-task-policy"
-                onClick={() => setActiveTask("policy")}
+                onClick={() => activateTask("policy")}
               >
                 Policy
               </button>

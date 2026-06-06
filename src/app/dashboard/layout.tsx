@@ -12,7 +12,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
   sidebar: React.ReactNode;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const { address, connect, disconnect, error, isConnected, isConnecting } = useWallet();
   const walletLabel = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "Wallet";
 

@@ -1082,6 +1082,15 @@ textarea:focus {
   text-transform: uppercase;
 }
 
+.sidebar__section-label {
+  width: 100%;
+  padding: 2px 10px 4px;
+  color: var(--market-grey-500);
+  font-size: 0.68rem;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
 .sidebar__link {
   width: 44px;
   min-height: 52px;
@@ -1123,6 +1132,10 @@ textarea:focus {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.sidebar--expanded .sidebar__link-title {
+  max-width: none;
 }
 
 .sidebar__link-icon {
@@ -1709,6 +1722,10 @@ textarea:focus {
   background: rgba(158, 121, 210, 0.15);
 }
 
+.dashboard-layout .sidebar__link--active .sidebar__link-icon {
+  background: var(--market-royal-500);
+}
+
 .dashboard-layout .sidebar__footer,
 .dashboard-layout .panel__head,
 .dashboard-layout .log-row {
@@ -1843,7 +1860,7 @@ textarea:focus {
 }
 
 .market-app__head--compact {
-  min-height: 92px;
+  min-height: 54px;
   align-items: center;
 }
 
@@ -1867,6 +1884,7 @@ textarea:focus {
   top: 14px;
   max-height: calc(100dvh - 132px);
   overflow: auto;
+  scroll-margin-top: 14px;
 }
 
 .market-list-panel .panel__head {
@@ -1960,6 +1978,7 @@ textarea:focus {
 
 .market-action-panel {
   min-height: calc(100dvh - 132px);
+  scroll-margin-top: 14px;
 }
 
 .market-action-panel__head {

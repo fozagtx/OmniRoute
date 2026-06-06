@@ -1833,7 +1833,7 @@ textarea:focus {
 
 .market-app__head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
   padding: 12px 14px;
@@ -1844,6 +1844,172 @@ textarea:focus {
 
 .market-app__head .cta {
   flex: 0 0 auto;
+}
+
+.market-app__lede {
+  max-width: 68ch;
+  margin: 6px 0 0;
+  color: var(--market-grey-400);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.market-list-panel .panel__head {
+  min-height: 64px;
+}
+
+.market-list-panel__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 6px 10px;
+  border: 1px solid rgba(251, 251, 253, 0.08);
+  border-radius: 999px;
+  color: var(--market-grey-300);
+  background: rgba(251, 251, 253, 0.04);
+  font-size: 0.76rem;
+}
+
+.market-list {
+  display: grid;
+  gap: 10px;
+}
+
+.market-row-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(251, 251, 253, 0.08);
+  border-radius: 8px;
+  background: rgba(251, 251, 253, 0.03);
+}
+
+.market-row-card__main {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.market-row-card__top,
+.market-row-card__meta,
+.market-row-card__side {
+  display: flex;
+  align-items: center;
+  flex-flow: row wrap;
+  gap: 8px;
+}
+
+.market-row-card__id,
+.market-row-card__status,
+.market-row-card__meta span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 5px 9px;
+  border: 1px solid rgba(251, 251, 253, 0.08);
+  border-radius: 999px;
+  color: var(--market-grey-400);
+  background: rgba(23, 25, 28, 0.7);
+  font-size: 0.76rem;
+  line-height: 1;
+}
+
+.market-row-card__status {
+  color: var(--market-status-positive);
+}
+
+.market-row-card h2 {
+  margin: 0;
+  color: var(--market-grey-100);
+  font-size: clamp(1rem, 2vw, 1.38rem);
+  font-weight: 400;
+  line-height: 1.18;
+  letter-spacing: 0;
+}
+
+.market-row-card__side {
+  min-width: 150px;
+  justify-content: flex-end;
+  align-content: space-between;
+}
+
+.market-row-card__side a,
+.source-card a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--market-royal-300);
+  font-size: 0.78rem;
+}
+
+.market-row-card__side .cta {
+  min-height: 38px;
+  padding: 7px 12px;
+}
+
+.market-app__section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 2px 0;
+}
+
+.market-app__section-heading h2 {
+  margin: 0;
+  color: var(--market-grey-100);
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.market-app__section-heading p {
+  margin: 0;
+  color: var(--market-grey-500);
+  font-size: 0.82rem;
+}
+
+.source-card {
+  display: grid;
+  gap: 8px;
+  min-height: 0;
+  padding: 12px;
+  border: 1px solid rgba(251, 251, 253, 0.08);
+  border-radius: 8px;
+  background: rgba(251, 251, 253, 0.03);
+}
+
+.source-card strong {
+  color: var(--market-grey-100);
+  font-size: 0.94rem;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.source-details {
+  border: 1px solid rgba(251, 251, 253, 0.08);
+  border-radius: 8px;
+  background: rgba(251, 251, 253, 0.03);
+}
+
+.source-details summary {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  cursor: pointer;
+  color: var(--market-grey-300);
+  font-size: 0.84rem;
+}
+
+.source-details p {
+  margin: 0;
+  padding: 0 12px 12px;
+  color: var(--market-grey-500);
+  font-size: 0.82rem;
+  line-height: 1.45;
 }
 
 .market-app__stats .stat {
@@ -2037,6 +2203,34 @@ textarea:focus {
 
   .dashboard-layout .sidebar__label-short {
     display: inline;
+  }
+
+  .market-app {
+    padding: 10px;
+  }
+
+  .market-app__head,
+  .market-app__section-heading,
+  .form-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .market-row-card {
+    grid-template-columns: 1fr;
+  }
+
+  .market-row-card__side {
+    min-width: 0;
+    justify-content: flex-start;
+  }
+
+  .market-app__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .market-app__action-input {
+    width: 100%;
   }
 
 }

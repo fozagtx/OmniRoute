@@ -25,6 +25,40 @@ type LogRow = {
   href?: string;
 };
 
+type MarketContractTuple = readonly [
+  Address,
+  string,
+  string,
+  string,
+  bigint,
+  boolean,
+  number,
+  number,
+  number,
+  number,
+  bigint,
+  bigint,
+  bigint,
+  bigint,
+  string,
+  number,
+  bigint,
+];
+
+type MarketRow = {
+  id: number;
+  creator: Address;
+  question: string;
+  evidenceUrl: string;
+  status: number;
+  outcome: number;
+  yesPool: bigint;
+  noPool: bigint;
+  resolutionReceipt: bigint;
+  resolutionOutput: string;
+  closeTime: bigint;
+};
+
 const marketSourcePresets = [
   {
     id: "ucl-final-result",
@@ -76,7 +110,10 @@ function parseNativeAmount(value: string, label: string) {
 }
 
 function formatNative(value: bigint | undefined) {
-  return typeof value === "bigint" ? `${formatEther(value)} STT` : "not read";
+  if (typeof value !== "bigint") return "not read";
+  const [whole, decimals = ""] = formatEther(value).split(".");
+  const trimmed = decimals.slice(0, 6).replace(/0+$/, "");
+  return `${whole}${trimmed ? `.${trimmed}` : ""} STT`;
 }
 
 function receiptHref(receiptOrRequestId: bigint | number | string | undefined) {
@@ -125,6 +162,9 @@ export default function AgentMarketApp() {
   const [feedback, setFeedback] = useState("");
   const [logRows, setLogRows] = useState<LogRow[]>([]);
   const [logsError, setLogsError] = useState("");
+  const [marketRows, setMarketRows] = useState<MarketRow[]>([]);
+  const [marketsError, setMarketsError] = useState("");
+  const [marketsLoading, setMarketsLoading] = useState(false);
 
   const contractEnabled = predictionMarketConfigured && Boolean(predictionMarketAddress);
 
@@ -173,20 +213,6 @@ export default function AgentMarketApp() {
     query: { enabled: contractEnabled },
   });
 
-  const { data: policyCount } = useReadContract({
-    address: predictionMarketAddress,
-    abi: predictionMarketAbi,
-    functionName: "policyCount",
-    query: { enabled: contractEnabled },
-  });
-
-  const { data: actionCount } = useReadContract({
-    address: predictionMarketAddress,
-    abi: predictionMarketAbi,
-    functionName: "actionCount",
-    query: { enabled: contractEnabled },
-  });
-
   const { data: nativeCredit } = useReadContract({
     address: predictionMarketAddress,
     abi: predictionMarketAbi,
@@ -228,9 +254,54 @@ export default function AgentMarketApp() {
   });
 
   const resolutionCost = quoteCost?.[2];
-  const marketCountText = typeof marketCount === "bigint" ? marketCount.toString() : "not read";
-  const policyCountText = typeof policyCount === "bigint" ? policyCount.toString() : "not read";
-  const actionCountText = typeof actionCount === "bigint" ? actionCount.toString() : "not read";
+  const loadMarkets = useCallback(
+    async (countValue = marketCount) => {
+      if (!publicClient || !predictionMarketAddress || typeof countValue !== "bigint" || countValue === 0n) {
+        setMarketRows([]);
+        setMarketsLoading(false);
+        return;
+      }
+
+      setMarketsError("");
+      setMarketsLoading(true);
+      try {
+        const contractAddress = predictionMarketAddress;
+        const count = Number(countValue);
+        const first = Math.max(1, count - 11);
+        const ids = Array.from({ length: count - first + 1 }, (_, index) => count - index);
+        const rows = await Promise.all(
+          ids.map(async (id) => {
+            const data = (await publicClient.readContract({
+              address: contractAddress,
+              abi: predictionMarketAbi,
+              functionName: "markets",
+              args: [BigInt(id)],
+            })) as MarketContractTuple;
+
+            return {
+              id,
+              creator: data[0],
+              question: data[1],
+              evidenceUrl: data[3],
+              closeTime: data[4],
+              status: data[8],
+              outcome: data[9],
+              yesPool: data[10],
+              noPool: data[11],
+              resolutionReceipt: data[13],
+              resolutionOutput: data[14],
+            };
+          }),
+        );
+        setMarketRows(rows);
+      } catch {
+        setMarketsError("Could not load markets from the deployed contract.");
+      } finally {
+        setMarketsLoading(false);
+      }
+    },
+    [marketCount, publicClient],
+  );
 
   const loadLogs = useCallback(async () => {
     if (!publicClient || !predictionMarketAddress) return;
@@ -238,7 +309,7 @@ export default function AgentMarketApp() {
     setLogsError("");
     try {
       const latest = await publicClient.getBlockNumber();
-      const fromBlock = latest > 5_000n ? latest - 5_000n : 0n;
+      const fromBlock = latest > 999n ? latest - 999n : 0n;
       const logs = await publicClient.getLogs({
         address: predictionMarketAddress,
         fromBlock,
@@ -362,7 +433,11 @@ export default function AgentMarketApp() {
       });
       setLogRows(rows.slice(0, 12));
     } catch (error) {
-      setLogsError(error instanceof Error ? error.message : "Could not read contract logs.");
+      setLogsError(
+        error instanceof Error
+          ? "Could not load recent events from Somnia RPC. Try syncing again."
+          : "Could not load recent events from Somnia RPC.",
+      );
     }
   }, [publicClient]);
 
@@ -373,6 +448,16 @@ export default function AgentMarketApp() {
   useEffect(() => {
     void loadLogs();
   }, [loadLogs]);
+
+  useEffect(() => {
+    void loadMarkets();
+  }, [loadMarkets]);
+
+  function selectMarket(id: number) {
+    const next = id.toString();
+    setMarketId(next);
+    setResolutionMarketId(next);
+  }
 
   function onSelectMarketSource(nextSourceId: string) {
     const source = marketSourcePresets.find((item) => item.id === nextSourceId) ?? defaultMarketSource;
@@ -423,6 +508,7 @@ export default function AgentMarketApp() {
       setMarketId(nextMarketCount.toString());
       setResolutionMarketId(nextMarketCount.toString());
       setFeedback(`Market created in block ${receipt.blockNumber.toString()}.`);
+      await loadMarkets(nextMarketCount);
       await loadLogs();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Market transaction failed.");
@@ -743,40 +829,82 @@ export default function AgentMarketApp() {
     >
       <header className="market-app__head">
         <div>
-          <p className="eyebrow">Somnia-native execution</p>
-          <h1 className="display">Live market</h1>
+          <p className="eyebrow">Somnia market workspace</p>
+          <h1 className="display">Markets</h1>
+          <p className="market-app__lede">
+            Create a source-bound market, stake STT, and resolve it through the
+            deployed Somnia agent flow.
+          </p>
         </div>
         <button type="button" className="cta cta--ghost" onClick={() => void loadLogs()}>
           <RefreshCw aria-hidden size={16} />
-          refresh logs
+          Sync events
         </button>
       </header>
 
-      <div className="stat-strip market-app__stats">
-        <div className="stat">
-          <span className="label">Contract</span>
-          <strong className="stat__val">{predictionMarketAddress ? shortAddress(predictionMarketAddress) : "unset"}</strong>
+      <section className="panel market-list-panel">
+        <div className="panel__head">
+          <div>
+            <p className="label">Markets</p>
+            <strong>Live contract markets</strong>
+          </div>
+          <span className="market-list-panel__count">On-chain</span>
         </div>
-        <div className="stat">
-          <span className="label">Markets</span>
-          <strong className="stat__val">{marketCountText}</strong>
+        <div className="panel__body">
+          {marketsError ? <p className="panel-state panel-state--error">{marketsError}</p> : null}
+          {!marketsError && marketsLoading ? (
+            <p className="panel-state">Loading markets from the deployed contract.</p>
+          ) : null}
+          {!marketsError && !marketsLoading && marketRows.length === 0 ? (
+            <p className="panel-state">No markets found on the deployed contract.</p>
+          ) : null}
+          {!marketsError && !marketsLoading && marketRows.length > 0 ? (
+            <div className="market-list">
+              {marketRows.map((market) => (
+                <article className="market-row-card" key={market.id}>
+                  <div className="market-row-card__main">
+                    <div className="market-row-card__top">
+                      <span className="market-row-card__id">Market {market.id}</span>
+                      <span className="market-row-card__status">{labelFrom(marketStatusLabels, market.status)}</span>
+                    </div>
+                    <h2>{market.question}</h2>
+                    <div className="market-row-card__meta">
+                      <span>YES {formatNative(market.yesPool)}</span>
+                      <span>NO {formatNative(market.noPool)}</span>
+                      <span>Outcome {labelFrom(sideLabels, market.outcome)}</span>
+                    </div>
+                  </div>
+                  <div className="market-row-card__side">
+                    <a href={market.evidenceUrl} target="_blank" rel="noopener noreferrer">
+                      Source <ExternalLink aria-hidden size={12} />
+                    </a>
+                    {receiptHref(market.resolutionReceipt) ? (
+                      <a href={receiptHref(market.resolutionReceipt)} target="_blank" rel="noopener noreferrer">
+                        Receipt <ExternalLink aria-hidden size={12} />
+                      </a>
+                    ) : null}
+                    <button type="button" className="cta cta--ghost" onClick={() => selectMarket(market.id)}>
+                      Use market
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : null}
         </div>
-        <div className="stat">
-          <span className="label">Policies</span>
-          <strong className="stat__val">{policyCountText}</strong>
-        </div>
-        <div className="stat">
-          <span className="label">Actions</span>
-          <strong className="stat__val">{actionCountText}</strong>
-        </div>
+      </section>
+
+      <div className="market-app__section-heading">
+        <h2>Market tools</h2>
+        <p>Create the next market or act on the selected one.</p>
       </div>
 
       <div className="grid-2 market-app__grid">
         <form className="panel" onSubmit={onCreateMarket}>
           <div className="panel__head">
             <div>
-              <p className="label">1 / market source</p>
-              <strong>Create market</strong>
+              <p className="label">Source</p>
+              <strong>Create source-bound market</strong>
             </div>
             <ShieldCheck aria-hidden size={20} />
           </div>
@@ -792,22 +920,17 @@ export default function AgentMarketApp() {
                   ))}
                 </select>
               </label>
-              <label className="field field--wide">
-                <span className="label">Question</span>
-                <textarea value={question} readOnly rows={2} />
-              </label>
-              <label className="field field--wide">
-                <span className="label">Resolution prompt</span>
-                <textarea value={resolutionPrompt} readOnly rows={3} />
-              </label>
-              <label className="field field--wide">
-                <span className="label">Resolution source</span>
-                <div className="asset-readout">
-                  <a href={evidenceUrl} target="_blank" rel="noopener noreferrer">
-                    {evidenceUrl}
-                  </a>
-                </div>
-              </label>
+              <div className="source-card field--wide">
+                <span className="label">Market question</span>
+                <strong>{question}</strong>
+                <a href={evidenceUrl} target="_blank" rel="noopener noreferrer">
+                  Source <ExternalLink aria-hidden size={12} />
+                </a>
+              </div>
+              <details className="source-details field--wide">
+                <summary>Resolution rules</summary>
+                <p>{resolutionPrompt}</p>
+              </details>
               <label className="field">
                 <span className="label">Close days</span>
                 <input inputMode="numeric" value={closeDays} onChange={(event) => setCloseDays(event.target.value)} />
@@ -822,9 +945,9 @@ export default function AgentMarketApp() {
               </label>
             </div>
             <div className="form-actions">
-              <span className="form-feedback">{contractEnabled ? "Source is configured by the app." : "Market address not configured."}</span>
+              <span className="form-feedback">{contractEnabled ? "Preset source is written on-chain." : "Market address not configured."}</span>
               <button type="submit" className="cta" disabled={isPending || !contractEnabled}>
-                create market
+                Create market
               </button>
             </div>
           </div>
@@ -833,8 +956,8 @@ export default function AgentMarketApp() {
         <form className="panel" onSubmit={onCreatePolicy}>
           <div className="panel__head">
             <div>
-              <p className="label">2 / executor guardrail</p>
-              <strong>Create policy</strong>
+              <p className="label">Policy</p>
+              <strong>Set executor limits</strong>
             </div>
             <SlidersHorizontal aria-hidden size={20} />
           </div>
@@ -847,7 +970,7 @@ export default function AgentMarketApp() {
               <label className="field">
                 <span className="label">Allowed side</span>
                 <select value={allowedSide} onChange={(event) => setAllowedSide(event.target.value)}>
-                  <option value="">Select</option>
+                  <option value="">Choose side</option>
                   <option value="0">Any</option>
                   <option value="1">YES</option>
                   <option value="2">NO</option>
@@ -874,16 +997,16 @@ export default function AgentMarketApp() {
               <span className="form-feedback">Native credit {formatNative(nativeCredit)}</span>
               <div className="form-actions__buttons">
                 <button type="button" className="cta cta--ghost" disabled={isPending || !contractEnabled} onClick={onWithdrawCredit}>
-                  withdraw credit
+                  Withdraw
                 </button>
                 <button type="button" className="cta cta--ghost" disabled={isPending || !contractEnabled} onClick={onDepositCredit}>
-                  deposit credit
+                  Deposit
                 </button>
                 <button type="button" className="cta cta--ghost" disabled={isPending || !contractEnabled} onClick={onDisablePolicy}>
-                  disable policy
+                  Disable
                 </button>
                 <button type="submit" className="cta" disabled={isPending || !contractEnabled}>
-                  create policy
+                  Create policy
                 </button>
               </div>
             </div>
@@ -894,8 +1017,8 @@ export default function AgentMarketApp() {
       <section className="panel">
         <div className="panel__head">
           <div>
-            <p className="label">3 / execution and resolution</p>
-            <strong>Run market actions</strong>
+            <p className="label">Trade</p>
+            <strong>Stake and settle</strong>
           </div>
         </div>
         <div className="panel__body">
@@ -907,7 +1030,7 @@ export default function AgentMarketApp() {
             <label className="field">
               <span className="label">Stake side</span>
               <select value={stakeSide} onChange={(event) => setStakeSide(event.target.value)}>
-                <option value="">Select</option>
+                <option value="">Choose side</option>
                 <option value="1">YES</option>
                 <option value="2">NO</option>
               </select>
@@ -923,7 +1046,7 @@ export default function AgentMarketApp() {
             <label className="field">
               <span className="label">Policy side</span>
               <select value={policySide} onChange={(event) => setPolicySide(event.target.value)}>
-                <option value="">Select</option>
+                <option value="">Choose side</option>
                 <option value="1">YES</option>
                 <option value="2">NO</option>
               </select>
@@ -945,16 +1068,16 @@ export default function AgentMarketApp() {
             <span className="form-feedback">Native credit {formatNative(nativeCredit)}</span>
             <div className="form-actions__buttons">
               <button type="button" className="cta cta--ghost" disabled={isPending || !contractEnabled} onClick={onStake}>
-                stake wallet
+                Stake wallet
               </button>
               <button type="button" className="cta cta--ghost" disabled={isPending || !contractEnabled} onClick={onStakeFromCredit}>
-                stake credit
+                Stake credit
               </button>
               <button type="button" className="cta cta--ghost" disabled={isPending || !contractEnabled} onClick={onExecutePolicy}>
-                execute policy
+                Use policy
               </button>
               <button type="button" className="cta cta--ghost" disabled={isPending || !contractEnabled} onClick={onClaim}>
-                claim
+                Claim
               </button>
               <button
                 type="button"
@@ -962,7 +1085,7 @@ export default function AgentMarketApp() {
                 disabled={isPending || !contractEnabled || typeof resolutionCost !== "bigint"}
                 onClick={onRequestResolution}
               >
-                resolve
+                Request resolution
               </button>
             </div>
           </div>
@@ -973,8 +1096,8 @@ export default function AgentMarketApp() {
         <section className="panel">
           <div className="panel__head">
             <div>
-              <p className="label">Live contract read</p>
-              <strong>Selected market</strong>
+              <p className="label">Read</p>
+              <strong>Market state</strong>
             </div>
           </div>
           <div className="panel__body">
@@ -1019,8 +1142,8 @@ export default function AgentMarketApp() {
         <section className="panel">
           <div className="panel__head">
             <div>
-              <p className="label">Live contract read</p>
-              <strong>Selected action</strong>
+              <p className="label">Read</p>
+              <strong>Action record</strong>
             </div>
             <input
               className="market-app__action-input"
@@ -1060,8 +1183,8 @@ export default function AgentMarketApp() {
       <section className="panel">
         <div className="panel__head">
           <div>
-            <p className="label">Recent on-chain logs</p>
-            <strong>Market events</strong>
+            <p className="label">Events</p>
+            <strong>Recent contract activity</strong>
           </div>
         </div>
         <div className="panel__body">
@@ -1089,9 +1212,9 @@ export default function AgentMarketApp() {
 
       <section className="panel">
         <div className="panel__body market-app__meta">
-          <span>Somnia agents {shortAddress(typeof platformAddress === "string" ? platformAddress : undefined)}</span>
-          <span>Parse agent {parseAgentId?.toString() ?? "not read"}</span>
-          <span>Subcommittee {subcommitteeSize?.toString() ?? "not read"}</span>
+          <span>Agents platform {shortAddress(typeof platformAddress === "string" ? platformAddress : undefined)}</span>
+          <span>Parse Website agent {parseAgentId?.toString() ?? "not read"}</span>
+          <span>Validators {subcommitteeSize?.toString() ?? "not read"}</span>
         </div>
       </section>
 

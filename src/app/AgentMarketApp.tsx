@@ -1,29 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ExternalLink, RefreshCw, ShieldCheck, SlidersHorizontal } from "lucide-react";
-import { decodeEventLog, formatEther, isAddress, parseEther, type Address } from "viem";
+import { ExternalLink, Plus, ShieldCheck, WalletCards } from "lucide-react";
+import { formatEther, isAddress, parseEther, type Address } from "viem";
 import { useAccount, usePublicClient, useReadContract, useWriteContract } from "wagmi";
 import {
-  actionKindLabels,
   marketStatusLabels,
   predictionMarketAbi,
   predictionMarketAddress,
   predictionMarketConfigured,
-  responseStatusLabels,
   sideLabels,
   somniaReceiptsBaseUrl,
 } from "@/lib/predictionMarket";
-
-type LogRow = {
-  key: string;
-  kind: string;
-  blockNumber: bigint;
-  logIndex: number;
-  label: string;
-  detail: string;
-  href?: string;
-};
 
 type MarketContractTuple = readonly [
   Address,
@@ -58,6 +46,8 @@ type MarketRow = {
   resolutionOutput: string;
   closeTime: bigint;
 };
+
+type ActiveMarketTask = "trade" | "resolve" | "create" | "policy";
 
 const marketSourcePresets = [
   {
@@ -133,6 +123,7 @@ export default function AgentMarketApp() {
   const publicClient = usePublicClient();
   const { writeContractAsync, isPending } = useWriteContract();
   const [revealed, setRevealed] = useState(false);
+  const [activeTask, setActiveTask] = useState<ActiveMarketTask>("trade");
 
   const [sourceId, setSourceId] = useState<string>(defaultMarketSource.id);
   const [question, setQuestion] = useState<string>(defaultMarketSource.question);
@@ -156,12 +147,8 @@ export default function AgentMarketApp() {
   const [policyId, setPolicyId] = useState("");
   const [policySide, setPolicySide] = useState("");
   const [policyAmount, setPolicyAmount] = useState("");
-  const [resolutionMarketId, setResolutionMarketId] = useState("");
-  const [selectedActionId, setSelectedActionId] = useState("");
 
   const [feedback, setFeedback] = useState("");
-  const [logRows, setLogRows] = useState<LogRow[]>([]);
-  const [logsError, setLogsError] = useState("");
   const [marketRows, setMarketRows] = useState<MarketRow[]>([]);
   const [marketsError, setMarketsError] = useState("");
   const [marketsLoading, setMarketsLoading] = useState(false);
@@ -173,36 +160,10 @@ export default function AgentMarketApp() {
     return Number.isInteger(parsed) && parsed > 0 ? BigInt(parsed) : undefined;
   }, [marketId]);
 
-  const actionIdForRead = useMemo(() => {
-    const parsed = Number.parseInt(selectedActionId, 10);
-    return Number.isInteger(parsed) && parsed > 0 ? BigInt(parsed) : undefined;
-  }, [selectedActionId]);
-
   const { data: quoteCost } = useReadContract({
     address: predictionMarketAddress,
     abi: predictionMarketAbi,
     functionName: "quoteResolutionCost",
-    query: { enabled: contractEnabled },
-  });
-
-  const { data: platformAddress } = useReadContract({
-    address: predictionMarketAddress,
-    abi: predictionMarketAbi,
-    functionName: "SOMNIA_AGENTS_TESTNET",
-    query: { enabled: contractEnabled },
-  });
-
-  const { data: parseAgentId } = useReadContract({
-    address: predictionMarketAddress,
-    abi: predictionMarketAbi,
-    functionName: "LLM_PARSE_WEBSITE_AGENT_ID",
-    query: { enabled: contractEnabled },
-  });
-
-  const { data: subcommitteeSize } = useReadContract({
-    address: predictionMarketAddress,
-    abi: predictionMarketAbi,
-    functionName: "DEFAULT_SUBCOMMITTEE_SIZE",
     query: { enabled: contractEnabled },
   });
 
@@ -245,15 +206,8 @@ export default function AgentMarketApp() {
     query: { enabled: contractEnabled && Boolean(marketIdForRead && address) },
   });
 
-  const { data: selectedAction } = useReadContract({
-    address: predictionMarketAddress,
-    abi: predictionMarketAbi,
-    functionName: "actions",
-    args: actionIdForRead ? [actionIdForRead] : undefined,
-    query: { enabled: contractEnabled && Boolean(actionIdForRead) },
-  });
-
   const resolutionCost = quoteCost?.[2];
+
   const loadMarkets = useCallback(
     async (countValue = marketCount) => {
       if (!publicClient || !predictionMarketAddress || typeof countValue !== "bigint" || countValue === 0n) {
@@ -303,160 +257,23 @@ export default function AgentMarketApp() {
     [marketCount, publicClient],
   );
 
-  const loadLogs = useCallback(async () => {
-    if (!publicClient || !predictionMarketAddress) return;
-
-    setLogsError("");
-    try {
-      const latest = await publicClient.getBlockNumber();
-      const fromBlock = latest > 999n ? latest - 999n : 0n;
-      const logs = await publicClient.getLogs({
-        address: predictionMarketAddress,
-        fromBlock,
-        toBlock: latest,
-      });
-
-      const rows: LogRow[] = [];
-      for (const log of logs) {
-        try {
-          if (!log.topics[0]) continue;
-          const decoded = decodeEventLog({
-            abi: predictionMarketAbi,
-            data: log.data,
-            topics: log.topics as [`0x${string}`, ...`0x${string}`[]],
-          });
-
-          if (decoded.eventName === "MarketCreated") {
-            rows.push({
-              key: `${log.transactionHash}-${log.logIndex}`,
-              kind: "Market",
-              blockNumber: log.blockNumber ?? 0n,
-              logIndex: log.logIndex ?? 0,
-              label: `Market ${decoded.args.marketId.toString()} created`,
-              detail: decoded.args.question,
-            });
-          }
-
-          if (decoded.eventName === "PolicyCreated") {
-            const args = decoded.args;
-            rows.push({
-              key: `${log.transactionHash}-${log.logIndex}`,
-              kind: "Policy",
-              blockNumber: log.blockNumber ?? 0n,
-              logIndex: log.logIndex ?? 0,
-              label: `Policy ${args.policyId.toString()} created`,
-              detail: `${labelFrom(sideLabels, args.allowedSide)} / executor ${shortAddress(args.executor)}`,
-            });
-          }
-
-          if (decoded.eventName === "MarketActionRecorded") {
-            const args = decoded.args;
-            rows.push({
-              key: `${log.transactionHash}-${log.logIndex}`,
-              kind: "Action",
-              blockNumber: log.blockNumber ?? 0n,
-              logIndex: log.logIndex ?? 0,
-              label: `Action ${args.actionId.toString()} / market ${args.marketId.toString()}`,
-              detail: `${labelFrom(actionKindLabels, args.kind)} / ${labelFrom(sideLabels, args.side)} / ${formatNative(args.amount)}`,
-            });
-          }
-
-          if (decoded.eventName === "ResolutionRequested") {
-            const args = decoded.args;
-            rows.push({
-              key: `${log.transactionHash}-${log.logIndex}`,
-              kind: "Resolve",
-              blockNumber: log.blockNumber ?? 0n,
-              logIndex: log.logIndex ?? 0,
-              label: `Market ${args.marketId.toString()} requested`,
-              detail: `request ${args.requestId.toString()} / deposit ${formatNative(args.requiredDeposit)}`,
-            });
-          }
-
-          if (decoded.eventName === "ResolutionReceived") {
-            const args = decoded.args;
-            rows.push({
-              key: `${log.transactionHash}-${log.logIndex}`,
-              kind: "Receipt",
-              blockNumber: log.blockNumber ?? 0n,
-              logIndex: log.logIndex ?? 0,
-              label: `Market ${args.marketId.toString()} receipt`,
-              detail: `${labelFrom(responseStatusLabels, args.status)} / ${args.output}`,
-              href: receiptHref(args.receipt),
-            });
-          }
-
-          if (decoded.eventName === "MarketResolved") {
-            const args = decoded.args;
-            rows.push({
-              key: `${log.transactionHash}-${log.logIndex}`,
-              kind: "Resolved",
-              blockNumber: log.blockNumber ?? 0n,
-              logIndex: log.logIndex ?? 0,
-              label: `Market ${args.marketId.toString()} ${labelFrom(sideLabels, args.outcome)}`,
-              detail: args.output,
-              href: receiptHref(args.receipt),
-            });
-          }
-
-          if (decoded.eventName === "ResolutionFailed") {
-            const args = decoded.args;
-            rows.push({
-              key: `${log.transactionHash}-${log.logIndex}`,
-              kind: "Failed",
-              blockNumber: log.blockNumber ?? 0n,
-              logIndex: log.logIndex ?? 0,
-              label: `Market ${args.marketId.toString()} failed`,
-              detail: `${labelFrom(responseStatusLabels, args.status)} / ${args.output}`,
-            });
-          }
-
-          if (decoded.eventName === "Claimed") {
-            const args = decoded.args;
-            rows.push({
-              key: `${log.transactionHash}-${log.logIndex}`,
-              kind: "Claim",
-              blockNumber: log.blockNumber ?? 0n,
-              logIndex: log.logIndex ?? 0,
-              label: `Market ${args.marketId.toString()} claimed`,
-              detail: `${shortAddress(args.trader)} / ${formatNative(args.payout)}`,
-            });
-          }
-        } catch {
-          continue;
-        }
-      }
-
-      rows.sort((a, b) => {
-        if (a.blockNumber === b.blockNumber) return b.logIndex - a.logIndex;
-        return a.blockNumber > b.blockNumber ? -1 : 1;
-      });
-      setLogRows(rows.slice(0, 12));
-    } catch (error) {
-      setLogsError(
-        error instanceof Error
-          ? "Could not load recent events from Somnia RPC. Try syncing again."
-          : "Could not load recent events from Somnia RPC.",
-      );
-    }
-  }, [publicClient]);
-
   useEffect(() => {
     setRevealed(true);
   }, []);
 
   useEffect(() => {
-    void loadLogs();
-  }, [loadLogs]);
-
-  useEffect(() => {
     void loadMarkets();
   }, [loadMarkets]);
 
+  useEffect(() => {
+    if (!marketId && marketRows[0]) {
+      setMarketId(marketRows[0].id.toString());
+    }
+  }, [marketId, marketRows]);
+
   function selectMarket(id: number) {
-    const next = id.toString();
-    setMarketId(next);
-    setResolutionMarketId(next);
+    setMarketId(id.toString());
+    setActiveTask("trade");
   }
 
   function onSelectMarketSource(nextSourceId: string) {
@@ -506,10 +323,9 @@ export default function AgentMarketApp() {
         functionName: "marketCount",
       });
       setMarketId(nextMarketCount.toString());
-      setResolutionMarketId(nextMarketCount.toString());
+      setActiveTask("trade");
       setFeedback(`Market created in block ${receipt.blockNumber.toString()}.`);
       await loadMarkets(nextMarketCount);
-      await loadLogs();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Market transaction failed.");
     }
@@ -552,7 +368,7 @@ export default function AgentMarketApp() {
       });
       setPolicyId(nextPolicyCount.toString());
       setFeedback(`Policy created in block ${receipt.blockNumber.toString()}.`);
-      await loadLogs();
+      await loadMarkets();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Policy transaction failed.");
     }
@@ -579,7 +395,7 @@ export default function AgentMarketApp() {
       });
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
       setFeedback(`Credit deposited in block ${receipt.blockNumber.toString()}.`);
-      await loadLogs();
+      await loadMarkets();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Credit deposit failed.");
     }
@@ -606,7 +422,7 @@ export default function AgentMarketApp() {
       });
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
       setFeedback(`Credit withdrawn in block ${receipt.blockNumber.toString()}.`);
-      await loadLogs();
+      await loadMarkets();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Credit withdrawal failed.");
     }
@@ -633,7 +449,7 @@ export default function AgentMarketApp() {
       });
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
       setFeedback(`Policy disabled in block ${receipt.blockNumber.toString()}.`);
-      await loadLogs();
+      await loadMarkets();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Policy disable failed.");
     }
@@ -663,7 +479,7 @@ export default function AgentMarketApp() {
       });
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
       setFeedback(`Stake recorded in block ${receipt.blockNumber.toString()}.`);
-      await loadLogs();
+      await loadMarkets();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Stake transaction failed.");
     }
@@ -692,7 +508,7 @@ export default function AgentMarketApp() {
       });
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
       setFeedback(`Credit stake recorded in block ${receipt.blockNumber.toString()}.`);
-      await loadLogs();
+      await loadMarkets();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Credit stake failed.");
     }
@@ -722,7 +538,7 @@ export default function AgentMarketApp() {
       });
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
       setFeedback(`Policy execution recorded in block ${receipt.blockNumber.toString()}.`);
-      await loadLogs();
+      await loadMarkets();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Policy execution failed.");
     }
@@ -744,7 +560,7 @@ export default function AgentMarketApp() {
     }
 
     try {
-      const parsedMarketId = parsePositiveInteger(resolutionMarketId || marketId, "Resolution market ID");
+      const parsedMarketId = parsePositiveInteger(marketId, "Market ID");
       const hash = await writeContractAsync({
         address: predictionMarketAddress,
         abi: predictionMarketAbi,
@@ -754,7 +570,7 @@ export default function AgentMarketApp() {
       });
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
       setFeedback(`Resolution requested in block ${receipt.blockNumber.toString()}.`);
-      await loadLogs();
+      await loadMarkets();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Resolution request failed.");
     }
@@ -781,7 +597,7 @@ export default function AgentMarketApp() {
       });
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
       setFeedback(`Claim submitted in block ${receipt.blockNumber.toString()}.`);
-      await loadLogs();
+      await loadMarkets();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Claim failed.");
     }
@@ -789,37 +605,27 @@ export default function AgentMarketApp() {
 
   const selectedMarketView = selectedMarket
     ? {
-        creator: selectedMarket[0],
         question: selectedMarket[1],
-        resolutionPrompt: selectedMarket[2],
         evidenceUrl: selectedMarket[3],
-        closeTime: selectedMarket[4],
-        resolveUrl: selectedMarket[5],
-        numPages: selectedMarket[6],
-        confidenceThreshold: selectedMarket[7],
         status: selectedMarket[8],
         outcome: selectedMarket[9],
         yesPool: selectedMarket[10],
         noPool: selectedMarket[11],
-        resolutionRequestId: selectedMarket[12],
         resolutionReceipt: selectedMarket[13],
         resolutionOutput: selectedMarket[14],
-        lastResolutionStatus: selectedMarket[15],
       }
     : undefined;
 
-  const selectedActionView = selectedAction
-    ? {
-        marketId: selectedAction[0],
-        actor: selectedAction[1],
-        trader: selectedAction[2],
-        kind: selectedAction[3],
-        side: selectedAction[4],
-        amount: selectedAction[5],
-        policyId: selectedAction[6],
-        requestId: selectedAction[7],
-      }
-    : undefined;
+  const selectedMarketRow = marketRows.find((market) => market.id.toString() === marketId);
+  const selectedQuestion = selectedMarketView?.question ?? selectedMarketRow?.question;
+  const selectedEvidenceUrl = selectedMarketView?.evidenceUrl ?? selectedMarketRow?.evidenceUrl;
+  const selectedStatus = selectedMarketView?.status ?? selectedMarketRow?.status;
+  const selectedOutcome = selectedMarketView?.outcome ?? selectedMarketRow?.outcome;
+  const selectedYesPool = marketPools?.[0] ?? selectedMarketView?.yesPool ?? selectedMarketRow?.yesPool;
+  const selectedNoPool = marketPools?.[1] ?? selectedMarketView?.noPool ?? selectedMarketRow?.noPool;
+  const selectedReceipt = selectedMarketView?.resolutionReceipt ?? selectedMarketRow?.resolutionReceipt;
+  const selectedOutput = selectedMarketView?.resolutionOutput ?? selectedMarketRow?.resolutionOutput;
+  const taskTabId = `market-task-${activeTask}`;
 
   return (
     <section
@@ -827,396 +633,372 @@ export default function AgentMarketApp() {
       data-open={revealed ? "true" : "false"}
       aria-label="Agentic prediction market"
     >
-      <header className="market-app__head">
+      <header className="market-app__head market-app__head--compact">
         <div>
-          <p className="eyebrow">Somnia market workspace</p>
-          <h1 className="display">Markets</h1>
-          <p className="market-app__lede">
-            Create a source-bound market, stake STT, and resolve it through the
-            deployed Somnia agent flow.
-          </p>
+          <p className="eyebrow">Somnia Markets</p>
+          <h1 className="display">Agent-watched markets</h1>
+          <p className="market-app__lede">Choose a live market, then run one action at a time.</p>
         </div>
-        <button type="button" className="cta cta--ghost" onClick={() => void loadLogs()}>
-          <RefreshCw aria-hidden size={16} />
-          Sync events
-        </button>
       </header>
 
-      <section className="panel market-list-panel">
-        <div className="panel__head">
-          <div>
-            <p className="label">Markets</p>
-            <strong>Live contract markets</strong>
+      <div className="market-workbench">
+        <section className="panel market-list-panel" aria-label="Markets">
+          <div className="panel__head">
+            <div>
+              <p className="label">Markets</p>
+              <strong>Live from contract</strong>
+            </div>
           </div>
-          <span className="market-list-panel__count">On-chain</span>
-        </div>
-        <div className="panel__body">
-          {marketsError ? <p className="panel-state panel-state--error">{marketsError}</p> : null}
-          {!marketsError && marketsLoading ? (
-            <p className="panel-state">Loading markets from the deployed contract.</p>
-          ) : null}
-          {!marketsError && !marketsLoading && marketRows.length === 0 ? (
-            <p className="panel-state">No markets found on the deployed contract.</p>
-          ) : null}
-          {!marketsError && !marketsLoading && marketRows.length > 0 ? (
-            <div className="market-list">
-              {marketRows.map((market) => (
-                <article className="market-row-card" key={market.id}>
-                  <div className="market-row-card__main">
-                    <div className="market-row-card__top">
-                      <span className="market-row-card__id">Market {market.id}</span>
-                      <span className="market-row-card__status">{labelFrom(marketStatusLabels, market.status)}</span>
-                    </div>
-                    <h2>{market.question}</h2>
-                    <div className="market-row-card__meta">
-                      <span>YES {formatNative(market.yesPool)}</span>
-                      <span>NO {formatNative(market.noPool)}</span>
-                      <span>Outcome {labelFrom(sideLabels, market.outcome)}</span>
-                    </div>
+          <div className="panel__body">
+            {marketsError ? <p className="panel-state panel-state--error">{marketsError}</p> : null}
+            {!marketsError && marketsLoading ? <p className="panel-state">Loading markets.</p> : null}
+            {!marketsError && !marketsLoading && marketRows.length === 0 ? (
+              <p className="panel-state">No markets found on the deployed contract.</p>
+            ) : null}
+            {!marketsError && !marketsLoading && marketRows.length > 0 ? (
+              <div className="market-list">
+                {marketRows.map((market) => {
+                  const selected = market.id.toString() === marketId;
+                  return (
+                    <article className="market-row-card" data-selected={selected ? "true" : "false"} key={market.id}>
+                      <div className="market-row-card__main">
+                        <div className="market-row-card__top">
+                          <span className="market-row-card__id">Market {market.id}</span>
+                          <span className="market-row-card__status">{labelFrom(marketStatusLabels, market.status)}</span>
+                        </div>
+                        <h2>{market.question}</h2>
+                        <div className="market-row-card__meta">
+                          <span>YES {formatNative(market.yesPool)}</span>
+                          <span>NO {formatNative(market.noPool)}</span>
+                          <span>{labelFrom(sideLabels, market.outcome)}</span>
+                        </div>
+                      </div>
+                      <div className="market-row-card__side">
+                        <a href={market.evidenceUrl} target="_blank" rel="noopener noreferrer">
+                          Source <ExternalLink aria-hidden size={12} />
+                        </a>
+                        {receiptHref(market.resolutionReceipt) ? (
+                          <a href={receiptHref(market.resolutionReceipt)} target="_blank" rel="noopener noreferrer">
+                            Receipt <ExternalLink aria-hidden size={12} />
+                          </a>
+                        ) : null}
+                        <button
+                          type="button"
+                          className="cta cta--ghost"
+                          aria-pressed={selected}
+                          onClick={() => selectMarket(market.id)}
+                        >
+                          {selected ? "Selected" : "Select"}
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : null}
+          </div>
+        </section>
+
+        <section className="panel market-action-panel" aria-label="Market actions">
+          <div className="panel__head market-action-panel__head">
+            <div>
+              <p className="label">Selected market</p>
+              <strong>{marketId ? `Market ${marketId}` : "Pick a market"}</strong>
+            </div>
+          </div>
+
+          <div className="panel__body">
+            <div className="selected-market">
+              {selectedQuestion ? (
+                <>
+                  <div className="selected-market__top">
+                    <span>{labelFrom(marketStatusLabels, selectedStatus)}</span>
+                    {selectedOutput ? <span>Result {selectedOutput}</span> : null}
                   </div>
-                  <div className="market-row-card__side">
-                    <a href={market.evidenceUrl} target="_blank" rel="noopener noreferrer">
-                      Source <ExternalLink aria-hidden size={12} />
-                    </a>
-                    {receiptHref(market.resolutionReceipt) ? (
-                      <a href={receiptHref(market.resolutionReceipt)} target="_blank" rel="noopener noreferrer">
+                  <h2>{selectedQuestion}</h2>
+                  <div className="selected-market__meta">
+                    <span>YES {formatNative(selectedYesPool)}</span>
+                    <span>NO {formatNative(selectedNoPool)}</span>
+                    <span>Outcome {labelFrom(sideLabels, selectedOutcome)}</span>
+                    {position ? (
+                      <span>
+                        Your position YES {formatNative(position[0])} / NO {formatNative(position[1])}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="selected-market__links">
+                    {selectedEvidenceUrl ? (
+                      <a href={selectedEvidenceUrl} target="_blank" rel="noopener noreferrer">
+                        Source <ExternalLink aria-hidden size={12} />
+                      </a>
+                    ) : null}
+                    {receiptHref(selectedReceipt) ? (
+                      <a href={receiptHref(selectedReceipt)} target="_blank" rel="noopener noreferrer">
                         Receipt <ExternalLink aria-hidden size={12} />
                       </a>
                     ) : null}
-                    <button type="button" className="cta cta--ghost" onClick={() => selectMarket(market.id)}>
-                      Use market
-                    </button>
                   </div>
-                </article>
-              ))}
+                </>
+              ) : (
+                <p className="panel-state">Select a market to trade or resolve.</p>
+              )}
             </div>
-          ) : null}
-        </div>
-      </section>
 
-      <div className="market-app__section-heading">
-        <h2>Market tools</h2>
-        <p>Create the next market or act on the selected one.</p>
-      </div>
-
-      <div className="grid-2 market-app__grid">
-        <form className="panel" onSubmit={onCreateMarket}>
-          <div className="panel__head">
-            <div>
-              <p className="label">Source</p>
-              <strong>Create source-bound market</strong>
-            </div>
-            <ShieldCheck aria-hidden size={20} />
-          </div>
-          <div className="panel__body">
-            <div className="form-grid">
-              <label className="field field--wide">
-                <span className="label">Market source</span>
-                <select value={sourceId} onChange={(event) => onSelectMarketSource(event.target.value)}>
-                  {marketSourcePresets.map((source) => (
-                    <option key={source.id} value={source.id}>
-                      {source.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <div className="source-card field--wide">
-                <span className="label">Market question</span>
-                <strong>{question}</strong>
-                <a href={evidenceUrl} target="_blank" rel="noopener noreferrer">
-                  Source <ExternalLink aria-hidden size={12} />
-                </a>
-              </div>
-              <details className="source-details field--wide">
-                <summary>Resolution rules</summary>
-                <p>{resolutionPrompt}</p>
-              </details>
-              <label className="field">
-                <span className="label">Close days</span>
-                <input inputMode="numeric" value={closeDays} onChange={(event) => setCloseDays(event.target.value)} />
-              </label>
-              <label className="field">
-                <span className="label">Pages</span>
-                <input inputMode="numeric" value={numPages} readOnly />
-              </label>
-              <label className="field">
-                <span className="label">Confidence</span>
-                <input inputMode="numeric" value={confidenceThreshold} readOnly />
-              </label>
-            </div>
-            <div className="form-actions">
-              <span className="form-feedback">{contractEnabled ? "Preset source is written on-chain." : "Market address not configured."}</span>
-              <button type="submit" className="cta" disabled={isPending || !contractEnabled}>
-                Create market
-              </button>
-            </div>
-          </div>
-        </form>
-
-        <form className="panel" onSubmit={onCreatePolicy}>
-          <div className="panel__head">
-            <div>
-              <p className="label">Policy</p>
-              <strong>Set executor limits</strong>
-            </div>
-            <SlidersHorizontal aria-hidden size={20} />
-          </div>
-          <div className="panel__body">
-            <div className="form-grid">
-              <label className="field field--wide">
-                <span className="label">Executor</span>
-                <input value={executor} onChange={(event) => setExecutor(event.target.value)} />
-              </label>
-              <label className="field">
-                <span className="label">Allowed side</span>
-                <select value={allowedSide} onChange={(event) => setAllowedSide(event.target.value)}>
-                  <option value="">Choose side</option>
-                  <option value="0">Any</option>
-                  <option value="1">YES</option>
-                  <option value="2">NO</option>
-                </select>
-              </label>
-              <label className="field">
-                <span className="label">Credit amount STT</span>
-                <input inputMode="decimal" value={creditAmount} onChange={(event) => setCreditAmount(event.target.value)} />
-              </label>
-              <label className="field">
-                <span className="label">Expiry days</span>
-                <input inputMode="numeric" value={policyExpiryDays} onChange={(event) => setPolicyExpiryDays(event.target.value)} />
-              </label>
-              <label className="field">
-                <span className="label">Max stake/action</span>
-                <input inputMode="decimal" value={maxStake} onChange={(event) => setMaxStake(event.target.value)} />
-              </label>
-              <label className="field">
-                <span className="label">Max total stake</span>
-                <input inputMode="decimal" value={maxTotalStake} onChange={(event) => setMaxTotalStake(event.target.value)} />
-              </label>
-            </div>
-            <div className="form-actions">
-              <span className="form-feedback">Native credit {formatNative(nativeCredit)}</span>
-              <div className="form-actions__buttons">
-                <button type="button" className="cta cta--ghost" disabled={isPending || !contractEnabled} onClick={onWithdrawCredit}>
-                  Withdraw
-                </button>
-                <button type="button" className="cta cta--ghost" disabled={isPending || !contractEnabled} onClick={onDepositCredit}>
-                  Deposit
-                </button>
-                <button type="button" className="cta cta--ghost" disabled={isPending || !contractEnabled} onClick={onDisablePolicy}>
-                  Disable
-                </button>
-                <button type="submit" className="cta" disabled={isPending || !contractEnabled}>
-                  Create policy
-                </button>
-              </div>
-            </div>
-          </div>
-        </form>
-      </div>
-
-      <section className="panel">
-        <div className="panel__head">
-          <div>
-            <p className="label">Trade</p>
-            <strong>Stake and settle</strong>
-          </div>
-        </div>
-        <div className="panel__body">
-          <div className="form-grid">
-            <label className="field">
-              <span className="label">Market ID</span>
-              <input inputMode="numeric" value={marketId} onChange={(event) => setMarketId(event.target.value)} />
-            </label>
-            <label className="field">
-              <span className="label">Stake side</span>
-              <select value={stakeSide} onChange={(event) => setStakeSide(event.target.value)}>
-                <option value="">Choose side</option>
-                <option value="1">YES</option>
-                <option value="2">NO</option>
-              </select>
-            </label>
-            <label className="field">
-              <span className="label">Stake value STT</span>
-              <input inputMode="decimal" value={stakeAmount} onChange={(event) => setStakeAmount(event.target.value)} />
-            </label>
-            <label className="field">
-              <span className="label">Policy ID</span>
-              <input inputMode="numeric" value={policyId} onChange={(event) => setPolicyId(event.target.value)} />
-            </label>
-            <label className="field">
-              <span className="label">Policy side</span>
-              <select value={policySide} onChange={(event) => setPolicySide(event.target.value)}>
-                <option value="">Choose side</option>
-                <option value="1">YES</option>
-                <option value="2">NO</option>
-              </select>
-            </label>
-            <label className="field">
-              <span className="label">Policy amount STT</span>
-              <input inputMode="decimal" value={policyAmount} onChange={(event) => setPolicyAmount(event.target.value)} />
-            </label>
-            <label className="field">
-              <span className="label">Resolution market</span>
-              <input inputMode="numeric" value={resolutionMarketId} onChange={(event) => setResolutionMarketId(event.target.value)} />
-            </label>
-            <div className="asset-readout">
-              <span>Resolution fee</span>
-              <strong>{formatNative(resolutionCost)}</strong>
-            </div>
-          </div>
-          <div className="form-actions">
-            <span className="form-feedback">Native credit {formatNative(nativeCredit)}</span>
-            <div className="form-actions__buttons">
-              <button type="button" className="cta cta--ghost" disabled={isPending || !contractEnabled} onClick={onStake}>
-                Stake wallet
-              </button>
-              <button type="button" className="cta cta--ghost" disabled={isPending || !contractEnabled} onClick={onStakeFromCredit}>
-                Stake credit
-              </button>
-              <button type="button" className="cta cta--ghost" disabled={isPending || !contractEnabled} onClick={onExecutePolicy}>
-                Use policy
-              </button>
-              <button type="button" className="cta cta--ghost" disabled={isPending || !contractEnabled} onClick={onClaim}>
-                Claim
+            <div className="market-task-tabs" role="tablist" aria-label="Market workflow">
+              <button
+                type="button"
+                className="market-task-tab"
+                data-active={activeTask === "trade" ? "true" : "false"}
+                role="tab"
+                aria-selected={activeTask === "trade"}
+                aria-controls="market-task-trade"
+                onClick={() => setActiveTask("trade")}
+              >
+                Trade
               </button>
               <button
                 type="button"
-                className="cta"
-                disabled={isPending || !contractEnabled || typeof resolutionCost !== "bigint"}
-                onClick={onRequestResolution}
+                className="market-task-tab"
+                data-active={activeTask === "resolve" ? "true" : "false"}
+                role="tab"
+                aria-selected={activeTask === "resolve"}
+                aria-controls="market-task-resolve"
+                onClick={() => setActiveTask("resolve")}
               >
-                Request resolution
+                Resolve
+              </button>
+              <button
+                type="button"
+                className="market-task-tab"
+                data-active={activeTask === "create" ? "true" : "false"}
+                role="tab"
+                aria-selected={activeTask === "create"}
+                aria-controls="market-task-create"
+                onClick={() => setActiveTask("create")}
+              >
+                Create
+              </button>
+              <button
+                type="button"
+                className="market-task-tab"
+                data-active={activeTask === "policy" ? "true" : "false"}
+                role="tab"
+                aria-selected={activeTask === "policy"}
+                aria-controls="market-task-policy"
+                onClick={() => setActiveTask("policy")}
+              >
+                Policy
               </button>
             </div>
-          </div>
-        </div>
-      </section>
 
-      <div className="grid-2 market-app__grid">
-        <section className="panel">
-          <div className="panel__head">
-            <div>
-              <p className="label">Read</p>
-              <strong>Market state</strong>
-            </div>
-          </div>
-          <div className="panel__body">
-            {selectedMarketView ? (
-              <dl className="kv">
-                <dt className="kv__k">Creator</dt>
-                <dd className="kv__v">{shortAddress(selectedMarketView.creator)}</dd>
-                <dt className="kv__k">Question</dt>
-                <dd className="kv__v">{selectedMarketView.question}</dd>
-                <dt className="kv__k">Status</dt>
-                <dd className="kv__v">{labelFrom(marketStatusLabels, selectedMarketView.status)}</dd>
-                <dt className="kv__k">Outcome</dt>
-                <dd className="kv__v">{labelFrom(sideLabels, selectedMarketView.outcome)}</dd>
-                <dt className="kv__k">Pools</dt>
-                <dd className="kv__v">
-                  YES {formatNative(marketPools?.[0] ?? selectedMarketView.yesPool)} / NO{" "}
-                  {formatNative(marketPools?.[1] ?? selectedMarketView.noPool)}
-                </dd>
-                <dt className="kv__k">Position</dt>
-                <dd className="kv__v">
-                  YES {formatNative(position?.[0])} / NO {formatNative(position?.[1])}
-                </dd>
-                <dt className="kv__k">Resolution</dt>
-                <dd className="kv__v">{selectedMarketView.resolutionOutput || "empty on-chain output"}</dd>
-                <dt className="kv__k">Receipt</dt>
-                <dd className="kv__v">
-                  {receiptHref(selectedMarketView.resolutionReceipt) ? (
-                    <a href={receiptHref(selectedMarketView.resolutionReceipt)} target="_blank" rel="noopener noreferrer">
-                      receipt {selectedMarketView.resolutionReceipt.toString()} <ExternalLink aria-hidden size={12} />
-                    </a>
-                  ) : (
-                    "not read"
-                  )}
-                </dd>
-              </dl>
-            ) : (
-              <p className="panel-state">Enter a market id to read contract state.</p>
-            )}
-          </div>
-        </section>
+            {activeTask === "trade" ? (
+              <div className="market-task-panel" id={taskTabId} role="tabpanel">
+                <div className="task-block">
+                  <div className="task-block__head">
+                    <WalletCards aria-hidden size={18} />
+                    <strong>Stake</strong>
+                  </div>
+                  <div className="form-grid">
+                    <label className="field">
+                      <span className="label">Market</span>
+                      <input inputMode="numeric" value={marketId} onChange={(event) => setMarketId(event.target.value)} />
+                    </label>
+                    <label className="field">
+                      <span className="label">Side</span>
+                      <select value={stakeSide} onChange={(event) => setStakeSide(event.target.value)}>
+                        <option value="">Choose side</option>
+                        <option value="1">YES</option>
+                        <option value="2">NO</option>
+                      </select>
+                    </label>
+                    <label className="field field--wide">
+                      <span className="label">Amount STT</span>
+                      <input inputMode="decimal" value={stakeAmount} onChange={(event) => setStakeAmount(event.target.value)} />
+                    </label>
+                  </div>
+                  <div className="form-actions">
+                    <span className="form-feedback">Credit {formatNative(nativeCredit)}</span>
+                    <div className="form-actions__buttons">
+                      <button type="button" className="cta cta--ghost" disabled={isPending || !contractEnabled} onClick={onStakeFromCredit}>
+                        Stake credit
+                      </button>
+                      <button type="button" className="cta" disabled={isPending || !contractEnabled} onClick={onStake}>
+                        Stake wallet
+                      </button>
+                      <button type="button" className="cta cta--ghost" disabled={isPending || !contractEnabled} onClick={onClaim}>
+                        Claim
+                      </button>
+                    </div>
+                  </div>
+                </div>
 
-        <section className="panel">
-          <div className="panel__head">
-            <div>
-              <p className="label">Read</p>
-              <strong>Action record</strong>
-            </div>
-            <input
-              className="market-app__action-input"
-              inputMode="numeric"
-              value={selectedActionId}
-              onChange={(event) => setSelectedActionId(event.target.value)}
-              placeholder="action id"
-            />
-          </div>
-          <div className="panel__body">
-            {selectedActionView ? (
-              <dl className="kv">
-                <dt className="kv__k">Market</dt>
-                <dd className="kv__v">{selectedActionView.marketId.toString()}</dd>
-                <dt className="kv__k">Actor</dt>
-                <dd className="kv__v">{shortAddress(selectedActionView.actor)}</dd>
-                <dt className="kv__k">Trader</dt>
-                <dd className="kv__v">{shortAddress(selectedActionView.trader)}</dd>
-                <dt className="kv__k">Kind</dt>
-                <dd className="kv__v">{labelFrom(actionKindLabels, selectedActionView.kind)}</dd>
-                <dt className="kv__k">Side</dt>
-                <dd className="kv__v">{labelFrom(sideLabels, selectedActionView.side)}</dd>
-                <dt className="kv__k">Amount</dt>
-                <dd className="kv__v">{formatNative(selectedActionView.amount)}</dd>
-                <dt className="kv__k">Policy</dt>
-                <dd className="kv__v">{selectedActionView.policyId.toString()}</dd>
-                <dt className="kv__k">Request</dt>
-                <dd className="kv__v">{selectedActionView.requestId.toString()}</dd>
-              </dl>
-            ) : (
-              <p className="panel-state">Enter an action id after a market action exists.</p>
-            )}
+                <div className="task-block task-block--split">
+                  <div className="task-block__head">
+                    <ShieldCheck aria-hidden size={18} />
+                    <strong>Policy order</strong>
+                  </div>
+                  <div className="form-grid">
+                    <label className="field">
+                      <span className="label">Policy</span>
+                      <input inputMode="numeric" value={policyId} onChange={(event) => setPolicyId(event.target.value)} />
+                    </label>
+                    <label className="field">
+                      <span className="label">Side</span>
+                      <select value={policySide} onChange={(event) => setPolicySide(event.target.value)}>
+                        <option value="">Choose side</option>
+                        <option value="1">YES</option>
+                        <option value="2">NO</option>
+                      </select>
+                    </label>
+                    <label className="field field--wide">
+                      <span className="label">Amount STT</span>
+                      <input inputMode="decimal" value={policyAmount} onChange={(event) => setPolicyAmount(event.target.value)} />
+                    </label>
+                  </div>
+                  <div className="form-actions form-actions--end">
+                    <button type="button" className="cta" disabled={isPending || !contractEnabled} onClick={onExecutePolicy}>
+                      Use policy
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            {activeTask === "resolve" ? (
+              <div className="market-task-panel" id={taskTabId} role="tabpanel">
+                <div className="task-block">
+                  <div className="task-block__head">
+                    <ShieldCheck aria-hidden size={18} />
+                    <strong>Resolve market</strong>
+                  </div>
+                  <div className="form-grid">
+                    <label className="field">
+                      <span className="label">Market</span>
+                      <input inputMode="numeric" value={marketId} onChange={(event) => setMarketId(event.target.value)} />
+                    </label>
+                    <div className="asset-readout">
+                      <span>Fee</span>
+                      <strong>{formatNative(resolutionCost)}</strong>
+                    </div>
+                  </div>
+                  <div className="form-actions form-actions--end">
+                    <button
+                      type="button"
+                      className="cta"
+                      disabled={isPending || !contractEnabled || typeof resolutionCost !== "bigint"}
+                      onClick={onRequestResolution}
+                    >
+                      Request resolution
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            {activeTask === "create" ? (
+              <form className="market-task-panel" id={taskTabId} role="tabpanel" onSubmit={onCreateMarket}>
+                <div className="task-block">
+                  <div className="task-block__head">
+                    <Plus aria-hidden size={18} />
+                    <strong>Create market</strong>
+                  </div>
+                  <div className="form-grid">
+                    <label className="field field--wide">
+                      <span className="label">Source preset</span>
+                      <select value={sourceId} onChange={(event) => onSelectMarketSource(event.target.value)}>
+                        {marketSourcePresets.map((source) => (
+                          <option key={source.id} value={source.id}>
+                            {source.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <div className="source-card field--wide">
+                      <span className="label">Question</span>
+                      <strong>{question}</strong>
+                      <a href={evidenceUrl} target="_blank" rel="noopener noreferrer">
+                        Source <ExternalLink aria-hidden size={12} />
+                      </a>
+                    </div>
+                    <details className="source-details field--wide">
+                      <summary>Resolution rules</summary>
+                      <p>{resolutionPrompt}</p>
+                    </details>
+                    <label className="field">
+                      <span className="label">Close days</span>
+                      <input inputMode="numeric" value={closeDays} onChange={(event) => setCloseDays(event.target.value)} />
+                    </label>
+                  </div>
+                  <div className="form-actions form-actions--end">
+                    <button type="submit" className="cta" disabled={isPending || !contractEnabled}>
+                      Create market
+                    </button>
+                  </div>
+                </div>
+              </form>
+            ) : null}
+
+            {activeTask === "policy" ? (
+              <form className="market-task-panel" id={taskTabId} role="tabpanel" onSubmit={onCreatePolicy}>
+                <div className="task-block">
+                  <div className="task-block__head">
+                    <ShieldCheck aria-hidden size={18} />
+                    <strong>Policy limits</strong>
+                  </div>
+                  <div className="form-grid">
+                    <label className="field field--wide">
+                      <span className="label">Executor</span>
+                      <input value={executor} onChange={(event) => setExecutor(event.target.value)} />
+                    </label>
+                    <label className="field">
+                      <span className="label">Allowed side</span>
+                      <select value={allowedSide} onChange={(event) => setAllowedSide(event.target.value)}>
+                        <option value="">Choose side</option>
+                        <option value="0">Any</option>
+                        <option value="1">YES</option>
+                        <option value="2">NO</option>
+                      </select>
+                    </label>
+                    <label className="field">
+                      <span className="label">Expiry days</span>
+                      <input inputMode="numeric" value={policyExpiryDays} onChange={(event) => setPolicyExpiryDays(event.target.value)} />
+                    </label>
+                    <label className="field">
+                      <span className="label">Max stake</span>
+                      <input inputMode="decimal" value={maxStake} onChange={(event) => setMaxStake(event.target.value)} />
+                    </label>
+                    <label className="field">
+                      <span className="label">Max total</span>
+                      <input inputMode="decimal" value={maxTotalStake} onChange={(event) => setMaxTotalStake(event.target.value)} />
+                    </label>
+                    <label className="field field--wide">
+                      <span className="label">Credit amount STT</span>
+                      <input inputMode="decimal" value={creditAmount} onChange={(event) => setCreditAmount(event.target.value)} />
+                    </label>
+                  </div>
+                  <div className="form-actions">
+                    <span className="form-feedback">Credit {formatNative(nativeCredit)}</span>
+                    <div className="form-actions__buttons">
+                      <button type="button" className="cta cta--ghost" disabled={isPending || !contractEnabled} onClick={onWithdrawCredit}>
+                        Withdraw
+                      </button>
+                      <button type="button" className="cta cta--ghost" disabled={isPending || !contractEnabled} onClick={onDepositCredit}>
+                        Deposit
+                      </button>
+                      <button type="button" className="cta cta--ghost" disabled={isPending || !contractEnabled} onClick={onDisablePolicy}>
+                        Disable
+                      </button>
+                      <button type="submit" className="cta" disabled={isPending || !contractEnabled}>
+                        Create policy
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            ) : null}
           </div>
         </section>
       </div>
-
-      <section className="panel">
-        <div className="panel__head">
-          <div>
-            <p className="label">Events</p>
-            <strong>Recent contract activity</strong>
-          </div>
-        </div>
-        <div className="panel__body">
-          {logsError ? <p className="panel-state panel-state--error">{logsError}</p> : null}
-          {!logsError && logRows.length === 0 ? (
-            <p className="panel-state">No matching contract logs in the latest scanned block range.</p>
-          ) : (
-            <div className="log-list">
-              {logRows.map((row) => (
-                <div className="log-row" key={row.key}>
-                  <span className="log-row__stat">{row.kind}</span>
-                  <span className="log-row__id">{row.label}</span>
-                  <span className="log-row__amt">{row.detail}</span>
-                  {row.href ? (
-                    <a className="log-row__addr" href={row.href} target="_blank" rel="noopener noreferrer">
-                      receipt
-                    </a>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      <section className="panel">
-        <div className="panel__body market-app__meta">
-          <span>Agents platform {shortAddress(typeof platformAddress === "string" ? platformAddress : undefined)}</span>
-          <span>Parse Website agent {parseAgentId?.toString() ?? "not read"}</span>
-          <span>Validators {subcommitteeSize?.toString() ?? "not read"}</span>
-        </div>
-      </section>
 
       {feedback ? <p className="market-app__feedback">{feedback}</p> : null}
     </section>

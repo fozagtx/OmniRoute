@@ -3367,3 +3367,276 @@ textarea:focus {
     align-items: stretch;
   }
 }
+
+/* Glass UI layer */
+:root {
+  --glass-fill: rgba(255, 255, 255, 0.42);
+  --glass-fill-strong: rgba(255, 255, 255, 0.62);
+  --glass-fill-soft: rgba(255, 255, 255, 0.28);
+  --glass-stroke: rgba(255, 255, 255, 0.52);
+  --glass-stroke-dark: rgba(26, 25, 23, 0.12);
+  --glass-shadow: 0 22px 70px rgba(49, 42, 31, 0.16);
+  --glass-shadow-tight: 0 12px 32px rgba(49, 42, 31, 0.12);
+  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.72), inset 0 -1px 0 rgba(26, 25, 23, 0.06);
+  --glass-blur: blur(22px) saturate(1.32);
+}
+
+.agent-nav,
+.agent-announcement,
+.agent-nav__cta,
+.agent-visual__console,
+.agent-platform-pill,
+.agent-flow,
+.agent-feature-card,
+.agent-step,
+.agent-faq__item,
+.agent-footer,
+.agent-footer__link,
+.dashboard-layout .sidebar,
+.dashboard-layout .clip-app__head,
+.dashboard-layout .panel,
+.dashboard-layout .task-block,
+.dashboard-layout .clip-selected,
+.dashboard-layout .clip-submissions,
+.dashboard-layout .clip-row-card,
+.dashboard-layout .clip-submission-row,
+.dashboard-layout .clip-task-tabs,
+.dashboard-layout .clip-contract-chip,
+.dashboard-layout .clip-counts span,
+.dashboard-layout .clip-row-card__top span,
+.dashboard-layout .clip-row-card__meta span,
+.dashboard-layout .clip-selected__top span,
+.dashboard-layout .clip-selected__meta span,
+.dashboard-layout .asset-readout,
+.dashboard-layout input,
+.dashboard-layout textarea,
+.dashboard-layout select,
+.dashboard-layout .cta,
+.dashboard-layout .clip-app__feedback {
+  position: relative;
+  border-color: var(--glass-stroke-dark);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.66), rgba(255, 255, 255, 0.24) 48%, rgba(255, 255, 255, 0.5)),
+    var(--glass-fill);
+  box-shadow: var(--glass-shadow-tight), var(--glass-inset);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.agent-nav,
+.dashboard-layout .sidebar,
+.dashboard-layout .clip-app__head,
+.dashboard-layout .panel,
+.dashboard-layout .task-block,
+.dashboard-layout .clip-selected,
+.dashboard-layout .clip-submissions,
+.dashboard-layout .clip-row-card,
+.dashboard-layout .clip-app__feedback {
+  overflow: hidden;
+}
+
+.agent-nav::before,
+.agent-visual__console::before,
+.agent-platform-pill::before,
+.agent-flow::before,
+.agent-feature-card::before,
+.agent-step::before,
+.agent-faq__item::before,
+.agent-footer::before,
+.dashboard-layout .sidebar::before,
+.dashboard-layout .clip-app__head::before,
+.dashboard-layout .panel::before,
+.dashboard-layout .task-block::before,
+.dashboard-layout .clip-selected::before,
+.dashboard-layout .clip-submissions::before,
+.dashboard-layout .clip-row-card::before,
+.dashboard-layout .clip-submission-row::before,
+.dashboard-layout .clip-app__feedback::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(118deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.12) 24%, transparent 45%),
+    radial-gradient(ellipse at 20% 0%, rgba(255, 255, 255, 0.42), transparent 48%);
+  mix-blend-mode: screen;
+  opacity: 0.62;
+}
+
+.agent-nav > *,
+.agent-visual__console > *,
+.agent-platform-pill > *,
+.agent-flow > *,
+.agent-feature-card > *,
+.agent-step > *,
+.agent-faq__item > *,
+.agent-footer > *,
+.dashboard-layout .sidebar > *,
+.dashboard-layout .clip-app__head > *,
+.dashboard-layout .panel > *,
+.dashboard-layout .task-block > *,
+.dashboard-layout .clip-selected > *,
+.dashboard-layout .clip-submissions > *,
+.dashboard-layout .clip-row-card > *,
+.dashboard-layout .clip-submission-row > *,
+.dashboard-layout .clip-app__feedback > * {
+  position: relative;
+  z-index: 1;
+}
+
+.agent-nav {
+  min-height: 76px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--glass-stroke);
+  border-radius: 22px;
+}
+
+.agent-announcement {
+  border-color: var(--glass-stroke);
+  box-shadow: 0 10px 28px rgba(49, 42, 31, 0.09), var(--glass-inset);
+}
+
+.agent-visual {
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 34px 90px rgba(49, 42, 31, 0.2);
+}
+
+.agent-visual::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  pointer-events: none;
+  border-radius: 17px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72), inset 0 -1px 0 rgba(26, 25, 23, 0.12);
+}
+
+.agent-visual__console {
+  border-color: rgba(255, 255, 255, 0.72);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.32)),
+    rgba(255, 255, 255, 0.4);
+  box-shadow: var(--glass-shadow), var(--glass-inset);
+}
+
+.agent-platform-pill,
+.agent-visual__console button,
+.agent-visual__console a,
+.agent-nav__cta,
+.agent-footer__link,
+.dashboard-layout .sidebar__toggle,
+.dashboard-layout .sidebar__link,
+.dashboard-layout .sidebar__wallet,
+.dashboard-layout .clip-task-tab,
+.dashboard-layout .cta {
+  border: 1px solid rgba(255, 255, 255, 0.46);
+  box-shadow: 0 8px 22px rgba(49, 42, 31, 0.1), var(--glass-inset);
+}
+
+.agent-button--primary,
+.dashboard-layout .cta:not(.cta--ghost),
+.dashboard-layout .clip-task-tab[data-active="true"] {
+  border-color: rgba(255, 255, 255, 0.16);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.02) 42%),
+    rgba(17, 16, 15, 0.88);
+  box-shadow: 0 16px 34px rgba(25, 24, 22, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(18px) saturate(1.18);
+  -webkit-backdrop-filter: blur(18px) saturate(1.18);
+}
+
+.dashboard-layout {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.12), transparent 34%),
+    radial-gradient(ellipse at 58% -10%, rgba(255, 255, 255, 0.98), rgba(249, 246, 238, 0.88) 52%, rgba(242, 236, 224, 0.96)),
+    #f4efe6;
+}
+
+.dashboard-layout .sidebar,
+.dashboard-layout .clip-app__head,
+.dashboard-layout .panel {
+  box-shadow: var(--glass-shadow);
+}
+
+.dashboard-layout .panel__head {
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.24)),
+    rgba(255, 255, 255, 0.34);
+  box-shadow: inset 0 -1px 0 rgba(26, 25, 23, 0.08);
+}
+
+.dashboard-layout .clip-row-card[data-selected="true"] {
+  border-color: rgba(78, 255, 27, 0.34);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.34)),
+    rgba(78, 255, 27, 0.08);
+  box-shadow: inset 4px 0 0 rgba(78, 255, 27, 0.85), var(--glass-shadow-tight), var(--glass-inset);
+}
+
+.dashboard-layout input,
+.dashboard-layout textarea,
+.dashboard-layout select {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.36)),
+    rgba(255, 255, 255, 0.58);
+}
+
+.dashboard-layout input:focus,
+.dashboard-layout textarea:focus,
+.dashboard-layout select:focus {
+  border-color: rgba(25, 24, 22, 0.52);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.52)),
+    rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 0 3px rgba(25, 24, 22, 0.1), 0 12px 28px rgba(49, 42, 31, 0.12), var(--glass-inset);
+}
+
+.dashboard-layout .cta--ghost {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.28)),
+    rgba(255, 255, 255, 0.44);
+}
+
+.dashboard-layout .cta:disabled {
+  border-color: rgba(26, 25, 23, 0.08);
+  background: rgba(255, 255, 255, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .agent-nav,
+  .agent-announcement,
+  .agent-nav__cta,
+  .agent-visual__console,
+  .agent-platform-pill,
+  .agent-flow,
+  .agent-feature-card,
+  .agent-step,
+  .agent-faq__item,
+  .agent-footer,
+  .agent-footer__link,
+  .dashboard-layout .sidebar,
+  .dashboard-layout .clip-app__head,
+  .dashboard-layout .panel,
+  .dashboard-layout .task-block,
+  .dashboard-layout .clip-selected,
+  .dashboard-layout .clip-submissions,
+  .dashboard-layout .clip-row-card,
+  .dashboard-layout .clip-submission-row,
+  .dashboard-layout .clip-task-tabs,
+  .dashboard-layout .clip-contract-chip,
+  .dashboard-layout .clip-counts span,
+  .dashboard-layout .clip-row-card__top span,
+  .dashboard-layout .clip-row-card__meta span,
+  .dashboard-layout .clip-selected__top span,
+  .dashboard-layout .clip-selected__meta span,
+  .dashboard-layout .asset-readout,
+  .dashboard-layout input,
+  .dashboard-layout textarea,
+  .dashboard-layout select,
+  .dashboard-layout .cta,
+  .dashboard-layout .clip-app__feedback {
+    background: rgba(255, 255, 255, 0.88);
+  }
+}

@@ -27,24 +27,14 @@ type LogRow = {
 
 const marketSourcePresets = [
   {
-    id: "somnia-agents-docs",
-    label: "Somnia Agents docs",
-    question: "Does the Somnia Agents documentation page describe Somnia Agents?",
-    resolutionPrompt: "Return exactly YES if the page describes Somnia Agents, otherwise return NO.",
-    evidenceUrl: "https://docs.somnia.network/agents",
-    resolveUrl: false,
-    numPages: 1,
-    confidenceThreshold: 70,
-  },
-  {
-    id: "somnia-market-explorer",
-    label: "Market contract explorer",
-    question: "Does the Shannon explorer page show the deployed SomniaPredictionMarket contract?",
+    id: "ucl-final-result",
+    label: "Champions League final result",
+    question: "Did the referenced football match finish level at full time?",
     resolutionPrompt:
-      "Return exactly YES if the page is for contract 0x157337Ee4373Ae2FA7bb2D609bB4EE7ecf0e7e78, otherwise return NO.",
-    evidenceUrl: "https://shannon-explorer.somnia.network/address/0x157337Ee4373Ae2FA7bb2D609bB4EE7ecf0e7e78",
+      "Read the referenced match report and return exactly YES if full time ended level before penalties, otherwise return NO.",
+    evidenceUrl: "https://www.uefa.com/uefachampionsleague/",
     resolveUrl: false,
-    numPages: 1,
+    numPages: 2,
     confidenceThreshold: 70,
   },
 ] as const;
@@ -297,7 +287,6 @@ export default function AgentMarketConsole() {
               logIndex: log.logIndex ?? 0,
               label: `Action ${args.actionId.toString()} / market ${args.marketId.toString()}`,
               detail: `${labelFrom(actionKindLabels, args.kind)} / ${labelFrom(sideLabels, args.side)} / ${formatNative(args.amount)}`,
-              href: receiptHref(args.requestId),
             });
           }
 
@@ -310,7 +299,6 @@ export default function AgentMarketConsole() {
               logIndex: log.logIndex ?? 0,
               label: `Market ${args.marketId.toString()} requested`,
               detail: `request ${args.requestId.toString()} / deposit ${formatNative(args.requiredDeposit)}`,
-              href: receiptHref(args.requestId),
             });
           }
 
@@ -787,7 +775,7 @@ export default function AgentMarketConsole() {
         <form className="panel" onSubmit={onCreateMarket}>
           <div className="panel__head">
             <div>
-              <p className="label">1 / market policy</p>
+              <p className="label">1 / market source</p>
               <strong>Create market</strong>
             </div>
             <ShieldCheck aria-hidden size={20} />

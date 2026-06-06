@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { ConnectKitButton } from "connectkit";
 import { Menu } from "lucide-react";
+import { useAccount } from "wagmi";
+import { SomniaMarkPaths } from "../SomniaMark";
 
 export default function DashboardLayout({
   children,
@@ -12,6 +14,7 @@ export default function DashboardLayout({
   sidebar: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const { isConnected } = useAccount();
 
   return (
     <div className={`dashboard-layout ${open ? "dashboard-layout--expanded" : "dashboard-layout--collapsed"}`}>
@@ -27,21 +30,13 @@ export default function DashboardLayout({
         </button>
         <a className="sidebar__brand" href="/" aria-label="Somnia Markets home">
           <span className="brand__mark" aria-hidden>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <circle cx="3.5" cy="3.5" r="2" fill="#fff" />
-              <circle cx="12.5" cy="12.5" r="2" fill="#fff" />
-              <path
-                d="M3.5 5.5v2.5a3 3 0 0 0 3 3h3"
-                stroke="#fff"
-                strokeWidth="1.5"
-                fill="none"
-                strokeLinecap="round"
-              />
+            <svg width="24" height="18" viewBox="0 0 42.1956 32" fill="none">
+              <SomniaMarkPaths />
             </svg>
           </span>
         </a>
 
-        <div className="sidebar__children">{sidebar}</div>
+        <div className="sidebar__children">{isConnected ? sidebar : null}</div>
 
         <div className="sidebar__footer">
           <ConnectKitButton.Custom>
@@ -60,7 +55,29 @@ export default function DashboardLayout({
         </div>
       </aside>
 
-      <main className="dashboard-main">{children}</main>
+      <main className="dashboard-main">
+        {isConnected ? (
+          children
+        ) : (
+          <section className="wallet-gate" aria-labelledby="wallet-gate-title">
+            <div className="wallet-gate__panel">
+              <p className="label">Wallet required</p>
+              <h1 id="wallet-gate-title">Connect before the market console opens.</h1>
+              <p>
+                The console reads live Somnia state and can submit contract
+                transactions. It stays closed until a wallet is connected.
+              </p>
+              <ConnectKitButton.Custom>
+                {({ show }) => (
+                  <button type="button" className="cta wallet-gate__button" onClick={show}>
+                    Connect wallet
+                  </button>
+                )}
+              </ConnectKitButton.Custom>
+            </div>
+          </section>
+        )}
+      </main>
     </div>
   );
 }

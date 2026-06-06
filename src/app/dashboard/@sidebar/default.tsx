@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRightLeft, Workflow } from "lucide-react";
+import { ArrowRightLeft } from "lucide-react";
 
 export default function DashboardSidebar() {
   const pathname = usePathname();
@@ -18,16 +18,6 @@ export default function DashboardSidebar() {
           <span className="sidebar__link-title">
             <span className="sidebar__label-full">Market</span>
             <span className="sidebar__label-short">Market</span>
-          </span>
-        </Link>
-        <Link
-          className={`sidebar__link ${pathname === "/dashboard/automations" ? "sidebar__link--active" : ""}`}
-          href="/dashboard/automations"
-        >
-          <Workflow className="sidebar__link-icon" aria-hidden size={16} />
-          <span className="sidebar__link-title">
-            <span className="sidebar__label-full">Receipts</span>
-            <span className="sidebar__label-short">Logs</span>
           </span>
         </Link>
       </nav>

@@ -73,7 +73,7 @@ function SomniaBrand() {
     <span className="somnia-brand" aria-hidden="true">
       <Image
         className="somnia-brand__mark"
-        src="/brand/somnia-market-penguin.png"
+        src="/brand/somnia-market-logo.png"
         alt=""
         width={56}
         height={56}

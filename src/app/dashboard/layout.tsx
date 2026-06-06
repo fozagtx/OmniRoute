@@ -31,7 +31,7 @@ export default function DashboardLayout({
         <a className="sidebar__brand" href="/" aria-label="Somnia Markets home">
           <span className="brand__mark" aria-hidden>
             <Image
-              src="/brand/somnia-market-penguin.png"
+              src="/brand/somnia-market-logo.png"
               alt=""
               width={56}
               height={56}

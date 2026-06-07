@@ -11,7 +11,7 @@
 <p align="center">
   <a href="https://tryreel.vercel.app">Live app</a>
   |
-  <a href="docs/reel-pitch-deck.md">Pitch deck</a>
+  <a href="docs/reel-pitch-deck.pdf">Pitch deck PDF</a>
   |
   <a href="docs/reel-pitch-deck.html">HTML slides</a>
 </p>
@@ -33,6 +33,7 @@ Reel lets brands post funded YouTube clip bounties. Clippers pick paid work, sub
 
 ## Pitch Deck
 
+- [PDF pitch deck](docs/reel-pitch-deck.pdf)
 - [Plain text deck](docs/reel-pitch-deck.md)
 - [HTML slide deck](docs/reel-pitch-deck.html)
 

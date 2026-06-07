@@ -29,11 +29,11 @@ type BountyTuple = readonly [
   bigint,
 ];
 
-type SubmissionTuple = readonly [bigint, Address, string, bigint, number, bigint, bigint, bigint, string, bigint];
+type SubmissionTuple = readonly [bigint, Address, string, bigint, number, bigint, bigint, bigint, string, bigint, bigint, bigint];
 
 type BountyRow = {
   id: number;
-  creator: Address;
+  brand: Address;
   title: string;
   campaignUrl: string;
   rules: string;
@@ -58,9 +58,13 @@ type SubmissionRow = {
   receipt: bigint;
   observedViews: bigint;
   paidAmount: bigint;
+  lastCheckedAt: bigint;
+  nextCheckAt: bigint;
 };
 
 type ActiveBountyTask = "submit" | "verify" | "create" | "funds";
+type AccountRole = 0 | 1 | 2;
+type RegistrationRole = "brand" | "clipper";
 
 type WriteContractInput = {
   functionName: string;
@@ -109,7 +113,7 @@ function labelFrom<T extends readonly string[]>(labels: T, value: number | bigin
 function bountyFromTuple(id: number, data: BountyTuple): BountyRow {
   return {
     id,
-    creator: data[0],
+    brand: data[0],
     title: data[1],
     campaignUrl: data[2],
     rules: data[3],
@@ -136,6 +140,8 @@ function submissionFromTuple(id: number, data: SubmissionTuple): SubmissionRow {
     receipt: data[6],
     observedViews: data[7],
     paidAmount: data[9],
+    lastCheckedAt: data[10],
+    nextCheckAt: data[11],
   };
 }
 
@@ -148,7 +154,7 @@ export default function ClipBountyApp() {
   const [isPending, setIsPending] = useState(false);
   const [activeTask, setActiveTask] = useState<ActiveBountyTask>("submit");
 
-  const [title, setTitle] = useState("First creator bounty push");
+  const [title, setTitle] = useState("First clipper bounty push");
   const [campaignUrl, setCampaignUrl] = useState("");
   const [rules, setRules] = useState(
     "Submit a public YouTube Short that references the campaign and reaches the view target before the deadline.",
@@ -163,12 +169,15 @@ export default function ClipBountyApp() {
   const [submissionId, setSubmissionId] = useState("");
   const [fundAmount, setFundAmount] = useState("");
   const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [registrationName, setRegistrationName] = useState("");
 
   const [feedback, setFeedback] = useState("");
   const [bountyCount, setBountyCount] = useState<bigint>();
   const [submissionCount, setSubmissionCount] = useState<bigint>();
   const [verificationCost, setVerificationCost] = useState<bigint>();
   const [nativeCredit, setNativeCredit] = useState<bigint>();
+  const [profileRole, setProfileRole] = useState<AccountRole>(0);
+  const [profileName, setProfileName] = useState("");
   const [bountyRows, setBountyRows] = useState<BountyRow[]>([]);
   const [submissionRows, setSubmissionRows] = useState<SubmissionRow[]>([]);
   const [selectedBounty, setSelectedBounty] = useState<BountyRow>();
@@ -185,9 +194,40 @@ export default function ClipBountyApp() {
     return Number.isInteger(parsed) && parsed > 0 ? BigInt(parsed) : undefined;
   }, [bountyId]);
 
-  const selectedRow = selectedBounty ?? bountyRows.find((row) => row.id.toString() === bountyId);
   const taskTabId = `bounty-task-${activeTask}`;
-  const activeLane = activeTask === "create" || activeTask === "funds" ? "brands" : "creators";
+  const activeLane = activeTask === "create" || activeTask === "funds" ? "brands" : "clippers";
+  const connectedAddress = address?.toLowerCase();
+  const nowSeconds = BigInt(Math.floor(Date.now() / 1000));
+  const expectedRole: AccountRole = activeLane === "brands" ? 1 : 2;
+  const canUseWorkspace = isConnected && profileRole === expectedRole;
+  const registeredAs = profileRole === 1 ? "Brand" : profileRole === 2 ? "Clipper" : "";
+  const brandBountyRows = useMemo(() => {
+    if (!connectedAddress || profileRole !== 1) return [];
+    return bountyRows.filter((row) => row.brand.toLowerCase() === connectedAddress);
+  }, [bountyRows, connectedAddress, profileRole]);
+  const clipperBountyRows = useMemo(() => {
+    if (connectedAddress && profileRole !== 2) return [];
+    return bountyRows.filter((row) => {
+      const isOwnBrandBounty = connectedAddress ? row.brand.toLowerCase() === connectedAddress : false;
+      return (
+        !isOwnBrandBounty &&
+        row.status === 1 &&
+        row.deadline > nowSeconds &&
+        row.approvedCount < row.maxPayouts &&
+        (availableFor(row) ?? 0n) > 0n
+      );
+    });
+  }, [bountyRows, connectedAddress, nowSeconds, profileRole]);
+  const visibleBountyRows = activeLane === "brands" ? brandBountyRows : clipperBountyRows;
+  const selectedLoadedBounty =
+    selectedBounty && selectedBounty.id.toString() === bountyId && visibleBountyRows.some((row) => row.id === selectedBounty.id)
+      ? selectedBounty
+      : undefined;
+  const selectedVisibleBounty = visibleBountyRows.find((row) => row.id.toString() === bountyId) ?? selectedLoadedBounty;
+  const visibleSubmissionRows = useMemo(() => {
+    if (!connectedAddress) return [];
+    return submissionRows.filter((row) => row.clipper.toLowerCase() === connectedAddress);
+  }, [connectedAddress, submissionRows]);
 
   const loadContractSnapshot = useCallback(async () => {
     if (!clipBountyAddress) return undefined;
@@ -215,15 +255,28 @@ export default function ClipBountyApp() {
     setSubmissionCount(submissionTotal as bigint);
 
     if (address) {
-      const credit = (await publicClient.readContract({
-        address: clipBountyAddress,
-        abi: clipBountyAbi,
-        functionName: "nativeCredits",
-        args: [address],
-      })) as bigint;
-      setNativeCredit(credit);
+      const [credit, profile] = await Promise.all([
+        publicClient.readContract({
+          address: clipBountyAddress,
+          abi: clipBountyAbi,
+          functionName: "nativeCredits",
+          args: [address],
+        }),
+        publicClient.readContract({
+          address: clipBountyAddress,
+          abi: clipBountyAbi,
+          functionName: "profiles",
+          args: [address],
+        }),
+      ]);
+      const [role, name] = profile as readonly [number, string, bigint];
+      setNativeCredit(credit as bigint);
+      setProfileRole((role === 1 || role === 2 ? role : 0) as AccountRole);
+      setProfileName(name);
     } else {
       setNativeCredit(undefined);
+      setProfileRole(0);
+      setProfileName("");
     }
 
     return bountyTotal as bigint;
@@ -322,20 +375,33 @@ export default function ClipBountyApp() {
   }, [loadSelectedBounty]);
 
   useEffect(() => {
-    if (!bountyId && bountyRows[0]) {
-      setBountyId(bountyRows[0].id.toString());
+    if (activeTask === "create") return;
+    if (visibleBountyRows.length === 0) {
+      if (bountyId) setBountyId("");
+      return;
     }
-  }, [bountyId, bountyRows]);
+    if (!visibleBountyRows.some((row) => row.id.toString() === bountyId)) {
+      setBountyId(visibleBountyRows[0].id.toString());
+    }
+  }, [activeTask, bountyId, visibleBountyRows]);
 
   useEffect(() => {
     function syncHashTask() {
       const hash = window.location.hash;
-      if (hash === "#creators" || hash === "#bounties") {
+      if (hash === "#clippers" || hash === "#bounties" || hash === "#bounty-task-submit") {
         setActiveTask("submit");
         return;
       }
-      if (hash === "#brands") {
+      if (hash === "#brands" || hash === "#bounty-task-create") {
         setActiveTask("create");
+        return;
+      }
+      if (hash === "#verify" || hash === "#bounty-task-verify") {
+        setActiveTask("verify");
+        return;
+      }
+      if (hash === "#funds" || hash === "#bounty-task-funds") {
+        setActiveTask("funds");
         return;
       }
       const nextTask = hash.replace("#bounty-task-", "");
@@ -351,7 +417,8 @@ export default function ClipBountyApp() {
 
   function activateTask(task: ActiveBountyTask) {
     setActiveTask(task);
-    const nextHash = task === "submit" ? "#creators" : task === "create" ? "#brands" : `#bounty-task-${task}`;
+    const nextHash =
+      task === "submit" ? "#clippers" : task === "create" ? "#brands" : task === "verify" ? "#verify" : "#funds";
     if (window.location.hash !== nextHash) {
       history.replaceState(null, "", nextHash);
       window.dispatchEvent(new HashChangeEvent("hashchange"));
@@ -360,7 +427,13 @@ export default function ClipBountyApp() {
 
   function selectBounty(id: number) {
     setBountyId(id.toString());
-    activateTask(activeLane === "brands" ? "funds" : "submit");
+    if (activeLane === "brands") {
+      activateTask("funds");
+      return;
+    }
+    if (activeTask !== "verify") {
+      activateTask("submit");
+    }
   }
 
   async function writeClipContract({ args, functionName, value }: WriteContractInput) {
@@ -390,6 +463,34 @@ export default function ClipBountyApp() {
     await loadSelectedBounty();
   }
 
+  async function onRegisterRole(event: React.FormEvent, role: RegistrationRole) {
+    event.preventDefault();
+    setFeedback("");
+    if (!clipBountyAddress) {
+      setFeedback("Clip bounty contract is not configured.");
+      return;
+    }
+    if (!isConnected) {
+      setFeedback("Connect a wallet first.");
+      return;
+    }
+    if (!registrationName.trim()) {
+      setFeedback("Profile name is required.");
+      return;
+    }
+
+    try {
+      const receipt = await writeClipContract({
+        functionName: role === "brand" ? "registerBrand" : "registerClipper",
+        args: [registrationName.trim()],
+      });
+      setFeedback(`${role === "brand" ? "Brand" : "Clipper"} registered in block ${receipt.blockNumber.toString()}.`);
+      await refreshAfterWrite();
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Registration failed.");
+    }
+  }
+
   async function onCreateBounty(event: React.FormEvent) {
     event.preventDefault();
     setFeedback("");
@@ -399,6 +500,10 @@ export default function ClipBountyApp() {
     }
     if (!isConnected) {
       setFeedback("Connect a wallet first.");
+      return;
+    }
+    if (profileRole !== 1) {
+      setFeedback("Register this wallet as a brand first.");
       return;
     }
 
@@ -444,9 +549,13 @@ export default function ClipBountyApp() {
       setFeedback("Connect a wallet first.");
       return;
     }
+    if (profileRole !== 2) {
+      setFeedback("Register this wallet as a clipper first.");
+      return;
+    }
 
     try {
-      const parsedBountyId = parsePositiveInteger(bountyId, "Bounty ID");
+      const parsedBountyId = parsePositiveInteger(bountyId, "Selected bounty");
       if (!clipUrl.trim()) throw new Error("YouTube URL is required.");
       const receipt = await writeClipContract({
         functionName: "submitClip",
@@ -466,7 +575,7 @@ export default function ClipBountyApp() {
     }
   }
 
-  async function onRequestVerification() {
+  async function onRequestVerification(nextSubmissionId: string | number = submissionId) {
     setFeedback("");
     if (!clipBountyAddress) {
       setFeedback("Clip bounty contract is not configured.");
@@ -476,13 +585,18 @@ export default function ClipBountyApp() {
       setFeedback("Connect a wallet first.");
       return;
     }
+    if (profileRole !== 2) {
+      setFeedback("Register this wallet as a clipper first.");
+      return;
+    }
     if (typeof verificationCost !== "bigint") {
       setFeedback("Verification fee is not available from the contract.");
       return;
     }
 
     try {
-      const parsedSubmissionId = parsePositiveInteger(submissionId, "Submission ID");
+      const parsedSubmissionId = parsePositiveInteger(String(nextSubmissionId), "Submitted clip");
+      setSubmissionId(String(parsedSubmissionId));
       const receipt = await writeClipContract({
         functionName: "requestVerification",
         value: verificationCost,
@@ -505,9 +619,13 @@ export default function ClipBountyApp() {
       setFeedback("Connect a wallet first.");
       return;
     }
+    if (profileRole !== 1) {
+      setFeedback("Register this wallet as a brand first.");
+      return;
+    }
 
     try {
-      const parsedBountyId = parsePositiveInteger(bountyId, "Bounty ID");
+      const parsedBountyId = parsePositiveInteger(bountyId, "Selected bounty");
       const value = parseNativeAmount(fundAmount, "Funding amount");
       const receipt = await writeClipContract({
         functionName: "fundBounty",
@@ -531,9 +649,13 @@ export default function ClipBountyApp() {
       setFeedback("Connect a wallet first.");
       return;
     }
+    if (profileRole !== 1) {
+      setFeedback("Register this wallet as a brand first.");
+      return;
+    }
 
     try {
-      const parsedBountyId = parsePositiveInteger(bountyId, "Bounty ID");
+      const parsedBountyId = parsePositiveInteger(bountyId, "Selected bounty");
       const receipt = await writeClipContract({
         functionName: "closeBounty",
         args: [BigInt(parsedBountyId)],
@@ -569,83 +691,86 @@ export default function ClipBountyApp() {
     }
   }
 
+  const workspace = {
+    submit: {
+      label: "Clippers",
+      title: "Join bounties",
+      copy:
+        "Choose a funded clip bounty, submit a public YouTube URL, and let the on-chain agent check the result before escrow pays.",
+    },
+    verify: {
+      label: "Clippers",
+      title: "Verify submitted clips",
+      copy:
+        "Run the agent check for your submitted clip. Passing clips are paid directly from escrow to the clipper wallet.",
+    },
+    create: {
+      label: "Brands",
+      title: "Create bounties",
+      copy: "Set the campaign, view target, payout, and deadline. Funding is locked in escrow when the bounty is created.",
+    },
+    funds: {
+      label: "Brands",
+      title: "Manage escrow",
+      copy: "Add STT to a bounty you created or close it to return unused escrow to your wallet.",
+    },
+  }[activeTask];
+
   return (
-    <section className="clip-app" aria-label="Reel escrow">
-      <header className="clip-app__head">
+    <section className="clip-app" aria-label={`${workspace.label} Reel workspace`}>
+      <header className="clip-workspace-head">
         <div>
-          <h1 className="display">Reel</h1>
-          <p>Create funded bounties, submit public URLs, and let Somnia verify the metric before escrow pays. YouTube views are live first.</p>
+          <p className="label">{workspace.label}</p>
+          <h1 className="display">{workspace.title}</h1>
+          <p>{workspace.copy}</p>
         </div>
-        <div className="clip-contract-chip">
-          <span>Contract</span>
-          <strong>{clipBountyAddress ? `${clipBountyAddress.slice(0, 6)}...${clipBountyAddress.slice(-4)}` : "Not configured"}</strong>
-        </div>
+        <button type="button" className="cta cta--ghost" disabled={!contractEnabled || isPending} onClick={() => void refreshAfterWrite()}>
+          Refresh
+        </button>
       </header>
 
-      <section className="clip-lanes" aria-label="Dashboard lanes">
-        <button
-          type="button"
-          id="creators"
-          className="clip-lane-card"
-          data-active={activeLane === "creators" ? "true" : "false"}
-          onClick={() => activateTask("submit")}
-        >
-          <span>Creators</span>
-          <strong>Join bounties</strong>
-          <p>Pick a live funded bounty, submit a public YouTube URL, and request view verification.</p>
-        </button>
-        <button
-          type="button"
-          id="brands"
-          className="clip-lane-card"
-          data-active={activeLane === "brands" ? "true" : "false"}
-          onClick={() => activateTask("create")}
-        >
-          <span>Brands</span>
-          <strong>Create bounties</strong>
-          <p>Fund a campaign, define the view target, set the payout, and manage escrow from the contract.</p>
-        </button>
-      </section>
+      {feedback ? (
+        <div className="clip-app__feedback" role="status">
+          <Lock aria-hidden size={14} />
+          <span>{feedback}</span>
+        </div>
+      ) : null}
 
-      <div className={`clip-workbench clip-workbench--${activeLane}`}>
-        <section className="panel clip-list-panel" id="bounties" aria-label="Bounties">
+      <div className={`clip-workspace clip-workspace--${activeLane} clip-workspace--${activeTask}`}>
+        <section className="panel clip-list-panel" id={activeLane === "brands" ? "brands" : "clippers"} aria-label="Bounties">
           <div className="panel__head">
             <div>
-              <p className="label">{activeLane === "brands" ? "Brand campaigns" : "Available bounties"}</p>
-              <strong>{activeLane === "brands" ? "Manage funded campaigns" : "Join live bounties"}</strong>
+              <p className="label">{activeLane === "brands" ? "Your brand bounties" : "Open bounties"}</p>
+              <strong>{activeLane === "brands" ? "Only campaigns created by this wallet" : "Funded clip work clippers can join"}</strong>
             </div>
-            <button type="button" className="cta cta--ghost" disabled={!contractEnabled || isPending} onClick={() => void refreshAfterWrite()}>
-              Refresh
-            </button>
           </div>
           <div className="panel__body">
             {bountiesError ? <p className="panel-state panel-state--error">{bountiesError}</p> : null}
             {!bountiesError && bountiesLoading ? <p className="panel-state">Loading bounties.</p> : null}
-            {!bountiesError && !bountiesLoading && bountyRows.length === 0 ? (
+            {!bountiesError && !bountiesLoading && visibleBountyRows.length === 0 ? (
               <p className="panel-state">
                 {activeLane === "brands"
-                  ? "No brand campaigns found on the deployed contract."
-                  : "No joinable bounties found on the deployed contract."}
+                  ? isConnected
+                    ? "This wallet has not created a bounty yet."
+                    : "Connect wallet to see brand bounties created by your address."
+                  : "No funded bounties from other brands are open right now."}
               </p>
             ) : null}
-            {!bountiesError && !bountiesLoading && bountyRows.length > 0 ? (
+            {!bountiesError && !bountiesLoading && visibleBountyRows.length > 0 ? (
               <div className="clip-list">
-                {bountyRows.map((bounty) => {
+                {visibleBountyRows.map((bounty) => {
                   const selected = bounty.id.toString() === bountyId;
                   return (
                     <article className="clip-row-card" data-selected={selected ? "true" : "false"} key={bounty.id}>
                       <div className="clip-row-card__top">
-                        <span>Bounty {bounty.id}</span>
                         <span>{labelFrom(bountyStatusLabels, bounty.status)}</span>
+                        <span>Closes {formatDate(bounty.deadline)}</span>
                       </div>
                       <h2>{bounty.title}</h2>
                       <div className="clip-row-card__meta">
                         <span>{formatCount(bounty.minViews)} views</span>
-                        <span>{formatNative(bounty.rewardPerClip)} / clip</span>
-                        <span>
-                          {formatCount(bounty.approvedCount)} / {formatCount(bounty.maxPayouts)} paid
-                        </span>
-                        <span>{formatNative(availableFor(bounty))} left</span>
+                        <span>{formatNative(bounty.rewardPerClip)} reward</span>
+                        <span>{formatNative(availableFor(bounty))} escrow left</span>
                       </div>
                       <div className="clip-row-card__side">
                         <a href={bounty.campaignUrl} target="_blank" rel="noopener noreferrer">
@@ -657,7 +782,7 @@ export default function ClipBountyApp() {
                           aria-pressed={selected}
                           onClick={() => selectBounty(bounty.id)}
                         >
-                          {selected ? (activeLane === "brands" ? "Managing" : "Selected") : activeLane === "brands" ? "Manage" : "Join bounty"}
+                          {selected ? "Selected" : activeLane === "brands" ? "Manage" : "Join"}
                         </button>
                       </div>
                     </article>
@@ -668,122 +793,96 @@ export default function ClipBountyApp() {
           </div>
         </section>
 
-        <section
-          className="panel clip-action-panel"
-          aria-label={activeLane === "brands" ? "Brand bounty dashboard" : "Creator bounty dashboard"}
-        >
+        <section className="panel clip-action-panel" aria-label={workspace.title}>
           <div className="panel__head">
             <div>
-              <p className="label">{activeLane === "brands" ? "Brand dashboard" : "Creator dashboard"}</p>
-              <strong>
-                {activeLane === "brands"
-                  ? "Create and fund bounties"
-                  : bountyId
-                    ? `Join Bounty ${bountyId}`
-                    : "Pick a bounty to join"}
-              </strong>
-            </div>
-            <div className="clip-counts">
-              <span>{formatCount(bountyCount)} bounties</span>
-              <span>{formatCount(submissionCount)} submissions</span>
+              <p className="label">{workspace.label}</p>
+              <strong>{workspace.title}</strong>
             </div>
           </div>
 
           <div className="panel__body">
-            <div className="clip-selected">
-              {selectedRow ? (
-                <>
-                  <div className="clip-selected__top">
-                    <span>{labelFrom(bountyStatusLabels, selectedRow.status)}</span>
-                    <span>Deadline {formatDate(selectedRow.deadline)}</span>
+            {!isConnected ? (
+              <div className="task-block">
+                <div className="task-block__head">
+                  <Lock aria-hidden size={18} />
+                  <strong>Connect wallet</strong>
+                </div>
+                <p className="panel-state">Connect before using the {activeLane === "brands" ? "brand" : "clipper"} workspace.</p>
+              </div>
+            ) : null}
+
+            {isConnected && !canUseWorkspace ? (
+              profileRole === 0 ? (
+                <form
+                  className="task-block"
+                  onSubmit={(event) => void onRegisterRole(event, activeLane === "brands" ? "brand" : "clipper")}
+                >
+                  <div className="task-block__head">
+                    <BadgeCheck aria-hidden size={18} />
+                    <strong>Register as {activeLane === "brands" ? "Brand" : "Clipper"}</strong>
                   </div>
-                  <h2>{selectedRow.title}</h2>
-                  <p>{selectedRow.rules}</p>
-                  <div className="clip-selected__meta">
-                    <span>Target {formatCount(selectedRow.minViews)} views</span>
-                    <span>Reward {formatNative(selectedRow.rewardPerClip)}</span>
-                    <span>Escrow {formatNative(availableFor(selectedRow))}</span>
-                    <span>
-                      Paid {formatCount(selectedRow.approvedCount)} / {formatCount(selectedRow.maxPayouts)}
-                    </span>
+                  <label className="field field--wide">
+                    <span className="label">{activeLane === "brands" ? "Brand name" : "Clipper name"}</span>
+                    <input value={registrationName} onChange={(event) => setRegistrationName(event.target.value)} />
+                  </label>
+                  <div className="form-actions form-actions--end">
+                    <button type="submit" className="cta" disabled={writeDisabled} title={writeTitle}>
+                      Register {activeLane === "brands" ? "brand" : "clipper"}
+                    </button>
                   </div>
-                  <a href={selectedRow.campaignUrl} target="_blank" rel="noopener noreferrer">
-                    Open campaign <ExternalLink aria-hidden size={12} />
-                  </a>
-                </>
+                </form>
               ) : (
-                <p className="panel-state">
-                  {activeLane === "brands"
-                    ? "Select a bounty to manage escrow, or create a new brand campaign."
-                    : "Select a bounty to join, then submit your public YouTube URL."}
-                </p>
-              )}
-            </div>
+                <div className="task-block">
+                  <div className="task-block__head">
+                    <Lock aria-hidden size={18} />
+                    <strong>{registeredAs} wallet</strong>
+                  </div>
+                  <p className="panel-state">
+                    This wallet is registered as {registeredAs}. Use a different wallet for the{" "}
+                    {activeLane === "brands" ? "brand" : "clipper"} workspace.
+                  </p>
+                </div>
+              )
+            ) : null}
 
-            <div className="clip-role-header">
-              <div>
-                <p className="label">{activeLane === "brands" ? "Brand actions" : "Creator actions"}</p>
-                <h2>{activeLane === "brands" ? "Create, fund, and close campaigns" : "Join, submit, and verify clips"}</h2>
-                <p>
-                  {activeLane === "brands"
-                    ? "Brands manage campaign terms, escrow, and unused credit from this screen."
-                    : "Creators choose a funded bounty, submit a public YouTube URL, then request the on-chain view check."}
-                </p>
-              </div>
-              <div
-                className="clip-task-tabs"
-                role="tablist"
-                aria-label={activeLane === "brands" ? "Brand workflow" : "Creator workflow"}
-              >
-                {(activeLane === "brands"
-                  ? [
-                      ["create", "Create bounty"],
-                      ["funds", "Escrow funds"],
-                    ]
-                  : [
-                      ["submit", "Submit link"],
-                      ["verify", "Verify views"],
-                    ]
-                ).map(([key, label]) => (
-                  <button
-                    type="button"
-                    className="clip-task-tab"
-                    data-active={activeTask === key ? "true" : "false"}
-                    role="tab"
-                    aria-selected={activeTask === key}
-                    aria-controls={`bounty-task-${key}`}
-                    key={key}
-                    onClick={() => activateTask(key as ActiveBountyTask)}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {activeTask === "submit" ? (
+            {canUseWorkspace && activeTask === "submit" ? (
               <form className="clip-task-panel" id={taskTabId} role="tabpanel" onSubmit={onSubmitClip}>
+                <div className="clip-selected">
+                  {selectedVisibleBounty ? (
+                    <>
+                      <div className="clip-selected__top">
+                        <span>{labelFrom(bountyStatusLabels, selectedVisibleBounty.status)}</span>
+                        <span>Deadline {formatDate(selectedVisibleBounty.deadline)}</span>
+                      </div>
+                      <h2>{selectedVisibleBounty.title}</h2>
+                      <p>{selectedVisibleBounty.rules}</p>
+                      <div className="clip-selected__meta">
+                        <span>Target {formatCount(selectedVisibleBounty.minViews)} views</span>
+                        <span>Reward {formatNative(selectedVisibleBounty.rewardPerClip)}</span>
+                        <span>Escrow {formatNative(availableFor(selectedVisibleBounty))}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="panel-state">Choose an open bounty before submitting your clipper link.</p>
+                  )}
+                </div>
+
                 <div className="task-block">
                   <div className="task-block__head">
                     <Send aria-hidden size={18} />
-                    <strong>Submit creator link</strong>
+                    <strong>Submit public YouTube URL</strong>
                   </div>
-                  <div className="form-grid">
-                    <label className="field">
-                      <span className="label">Bounty ID</span>
-                      <input inputMode="numeric" value={bountyId} onChange={(event) => setBountyId(event.target.value)} />
-                    </label>
-                    <label className="field field--wide">
-                      <span className="label">Current platform URL</span>
-                      <input
-                        value={clipUrl}
-                        onChange={(event) => setClipUrl(event.target.value)}
-                        placeholder="https://www.youtube.com/shorts/..."
-                      />
-                    </label>
-                  </div>
+                  <label className="field field--wide">
+                    <span className="label">Clipper link</span>
+                    <input
+                      value={clipUrl}
+                      onChange={(event) => setClipUrl(event.target.value)}
+                      placeholder="https://www.youtube.com/shorts/..."
+                    />
+                  </label>
                   <div className="form-actions form-actions--end">
-                    <button type="submit" className="cta" disabled={writeDisabled} title={writeTitle}>
+                    <button type="submit" className="cta" disabled={writeDisabled || !selectedVisibleBounty} title={writeTitle}>
                       Submit clip
                     </button>
                   </div>
@@ -791,65 +890,65 @@ export default function ClipBountyApp() {
               </form>
             ) : null}
 
-            {activeTask === "verify" ? (
+            {canUseWorkspace && activeTask === "verify" ? (
               <div className="clip-task-panel" id={taskTabId} role="tabpanel">
-                <div className="task-block">
-                  <div className="task-block__head">
-                    <Search aria-hidden size={18} />
-                    <strong>Request Somnia check</strong>
-                  </div>
-                  <div className="form-grid">
-                    <label className="field">
-                      <span className="label">Submission ID</span>
-                      <input inputMode="numeric" value={submissionId} onChange={(event) => setSubmissionId(event.target.value)} />
-                    </label>
-                    <div className="asset-readout">
-                      <span>Agent fee</span>
-                      <strong>{formatNative(verificationCost)}</strong>
-                    </div>
-                  </div>
-                  <div className="form-actions form-actions--end">
-                    <button
-                      type="button"
-                      className="cta"
-                      disabled={writeDisabled || typeof verificationCost !== "bigint"}
-                      title={writeTitle}
-                      onClick={onRequestVerification}
-                    >
-                      Check views
-                    </button>
-                  </div>
+                <div className="clip-selected">
+                  {selectedVisibleBounty ? (
+                    <>
+                      <div className="clip-selected__top">
+                        <span>{labelFrom(bountyStatusLabels, selectedVisibleBounty.status)}</span>
+                        <span>Agent fee {formatNative(verificationCost)}</span>
+                      </div>
+                      <h2>{selectedVisibleBounty.title}</h2>
+                      <p>The agent reads your submitted YouTube URL, checks the visible views against this bounty, and triggers escrow payout when it passes.</p>
+                    </>
+                  ) : (
+                    <p className="panel-state">Choose a bounty with a clip submitted from this wallet.</p>
+                  )}
                 </div>
 
-                <div className="clip-submissions" aria-label="Recent submissions">
+                <div className="clip-submissions" aria-label="Your submitted clips">
                   <div className="clip-submissions__head">
-                    <strong>Recent submissions</strong>
+                    <strong>Your submitted clips</strong>
                     {submissionsLoading ? <span>Loading</span> : null}
                   </div>
-                  {submissionRows.length === 0 ? <p className="panel-state">No clips submitted for this bounty.</p> : null}
-                  {submissionRows.map((submission) => (
+                  {visibleSubmissionRows.length === 0 ? (
+                    <p className="panel-state">No clips from this wallet are attached to the selected bounty.</p>
+                  ) : null}
+                  {visibleSubmissionRows.map((submission) => {
+                    const canCheckClip = submission.status === 1 || submission.status === 3;
+                    return (
                     <article className="clip-submission-row" key={submission.id}>
                       <div>
-                        <span>Submission {submission.id}</span>
-                        <strong>{labelFrom(submissionStatusLabels, submission.status)}</strong>
+                        <span>{labelFrom(submissionStatusLabels, submission.status)}</span>
+                        <strong>{formatCount(submission.observedViews)} views observed</strong>
+                        {submission.status === 3 && submission.nextCheckAt > 0n ? (
+                          <span>Next check {formatDate(submission.nextCheckAt)}</span>
+                        ) : null}
                       </div>
                       <div>
-                        <span>{formatCount(submission.observedViews)} views</span>
                         <span>{formatNative(submission.paidAmount)}</span>
                       </div>
                       <a href={submission.clipUrl} target="_blank" rel="noopener noreferrer">
                         YouTube <ExternalLink aria-hidden size={12} />
                       </a>
-                      <button type="button" className="cta cta--ghost" onClick={() => setSubmissionId(submission.id.toString())}>
-                        Use
+                      <button
+                        type="button"
+                        className="cta cta--ghost"
+                        disabled={writeDisabled || typeof verificationCost !== "bigint" || !canCheckClip}
+                        title={writeTitle}
+                        onClick={() => void onRequestVerification(submission.id)}
+                      >
+                        {submission.status === 3 ? "Check again" : "Check views"}
                       </button>
                     </article>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ) : null}
 
-            {activeTask === "create" ? (
+            {canUseWorkspace && activeTask === "create" ? (
               <form className="clip-task-panel" id={taskTabId} role="tabpanel" onSubmit={onCreateBounty}>
                 <div className="task-block">
                   <div className="task-block__head">
@@ -863,7 +962,11 @@ export default function ClipBountyApp() {
                     </label>
                     <label className="field field--wide">
                       <span className="label">Campaign URL</span>
-                      <input value={campaignUrl} onChange={(event) => setCampaignUrl(event.target.value)} placeholder="https://www.youtube.com/watch?v=..." />
+                      <input
+                        value={campaignUrl}
+                        onChange={(event) => setCampaignUrl(event.target.value)}
+                        placeholder="https://www.youtube.com/watch?v=..."
+                      />
                     </label>
                     <label className="field field--wide">
                       <span className="label">Rules</span>
@@ -887,7 +990,7 @@ export default function ClipBountyApp() {
                     </label>
                   </div>
                   <div className="form-actions">
-                    <span className="form-feedback">Funds sent: reward x max payouts.</span>
+                    <span className="form-feedback">The brand wallet funds reward x max payouts when this transaction is signed.</span>
                     <button type="submit" className="cta" disabled={writeDisabled} title={writeTitle}>
                       Create bounty
                     </button>
@@ -896,28 +999,53 @@ export default function ClipBountyApp() {
               </form>
             ) : null}
 
-            {activeTask === "funds" ? (
+            {canUseWorkspace && activeTask === "funds" ? (
               <div className="clip-task-panel" id={taskTabId} role="tabpanel">
+                <div className="clip-selected">
+                  {selectedVisibleBounty ? (
+                    <>
+                      <div className="clip-selected__top">
+                        <span>{labelFrom(bountyStatusLabels, selectedVisibleBounty.status)}</span>
+                        <span>Paid {formatCount(selectedVisibleBounty.approvedCount)} / {formatCount(selectedVisibleBounty.maxPayouts)}</span>
+                      </div>
+                      <h2>{selectedVisibleBounty.title}</h2>
+                      <div className="clip-selected__meta">
+                        <span>Escrow {formatNative(availableFor(selectedVisibleBounty))}</span>
+                        <span>Total funded {formatNative(selectedVisibleBounty.totalFunded)}</span>
+                        <span>Total paid {formatNative(selectedVisibleBounty.totalPaid)}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="panel-state">Choose one of your brand bounties to manage escrow.</p>
+                  )}
+                </div>
+
                 <div className="task-block">
                   <div className="task-block__head">
                     <WalletCards aria-hidden size={18} />
-                    <strong>Fund or close</strong>
+                    <strong>Escrow controls</strong>
                   </div>
-                  <div className="form-grid">
-                    <label className="field">
-                      <span className="label">Bounty ID</span>
-                      <input inputMode="numeric" value={bountyId} onChange={(event) => setBountyId(event.target.value)} />
-                    </label>
-                    <label className="field">
-                      <span className="label">Add STT</span>
-                      <input inputMode="decimal" value={fundAmount} onChange={(event) => setFundAmount(event.target.value)} />
-                    </label>
-                  </div>
+                  <label className="field">
+                    <span className="label">Add STT</span>
+                    <input inputMode="decimal" value={fundAmount} onChange={(event) => setFundAmount(event.target.value)} />
+                  </label>
                   <div className="form-actions form-actions--end">
-                    <button type="button" className="cta cta--ghost" disabled={writeDisabled} title={writeTitle} onClick={onCloseBounty}>
+                    <button
+                      type="button"
+                      className="cta cta--ghost"
+                      disabled={writeDisabled || !selectedVisibleBounty}
+                      title={writeTitle}
+                      onClick={onCloseBounty}
+                    >
                       Close bounty
                     </button>
-                    <button type="button" className="cta" disabled={writeDisabled} title={writeTitle} onClick={onFundBounty}>
+                    <button
+                      type="button"
+                      className="cta"
+                      disabled={writeDisabled || !selectedVisibleBounty}
+                      title={writeTitle}
+                      onClick={onFundBounty}
+                    >
                       Add funds
                     </button>
                   </div>
@@ -949,13 +1077,6 @@ export default function ClipBountyApp() {
           </div>
         </section>
       </div>
-
-      {feedback ? (
-        <div className="clip-app__feedback" role="status">
-          <Lock aria-hidden size={14} />
-          <span>{feedback}</span>
-        </div>
-      ) : null}
     </section>
   );
 }

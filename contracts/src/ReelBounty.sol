@@ -6,7 +6,7 @@ import {IAgentRequester, IParseWebsiteAgent, Request, Response, ResponseStatus} 
 
 /// @notice Native-STT escrow for YouTube clip bounties verified through
 ///         Somnia's documented LLM Parse Website agent callback path.
-contract SomniaClipBounty is ReentrancyGuard {
+contract ReelBounty is ReentrancyGuard {
     address public constant SOMNIA_AGENTS_TESTNET = 0x037Bb9C718F3f7fe5eCBDB0b600D607b52706776;
     uint256 public constant LLM_PARSE_WEBSITE_AGENT_ID = 12875401142070969085;
     uint256 public constant LLM_PARSE_WEBSITE_COST_PER_VALIDATOR = 0.1 ether;
@@ -18,8 +18,15 @@ contract SomniaClipBounty is ReentrancyGuard {
     uint8 public constant VERIFICATION_PAGES = 2;
     uint8 public constant VERIFICATION_CONFIDENCE = 70;
     uint256 public constant MAX_VIEW_COUNT = 1_000_000_000_000;
+    uint256 public constant VERIFICATION_RETRY_COOLDOWN = 30 minutes;
 
     IAgentRequester public immutable platform;
+
+    enum AccountRole {
+        None,
+        Brand,
+        Clipper
+    }
 
     enum BountyStatus {
         None,
@@ -31,12 +38,19 @@ contract SomniaClipBounty is ReentrancyGuard {
         None,
         Submitted,
         Verifying,
+        PendingRetry,
         Rejected,
         Paid
     }
 
+    struct Profile {
+        AccountRole role;
+        string name;
+        uint256 registeredAt;
+    }
+
     struct Bounty {
-        address creator;
+        address brand;
         string title;
         string campaignUrl;
         string rules;
@@ -63,6 +77,8 @@ contract SomniaClipBounty is ReentrancyGuard {
         uint256 observedViews;
         string verificationOutput;
         uint256 paidAmount;
+        uint256 lastCheckedAt;
+        uint256 nextCheckAt;
     }
 
     uint256 public bountyCount;
@@ -75,12 +91,19 @@ contract SomniaClipBounty is ReentrancyGuard {
     mapping(uint256 => uint256) public requestToSubmission;
     mapping(uint256 => address) public requestToVerifier;
     mapping(address => uint256) public nativeCredits;
+    mapping(address => Profile) public profiles;
+    mapping(address => uint256[]) private brandBountyIds;
+    mapping(address => uint256[]) private clipperSubmissionIds;
 
+    address public immutable owner;
+    address public automationOperator;
     address private pendingRebateRecipient;
 
+    event ProfileRegistered(address indexed account, AccountRole indexed role, string name);
+    event AutomationOperatorSet(address indexed operator);
     event BountyCreated(
         uint256 indexed bountyId,
-        address indexed creator,
+        address indexed brand,
         uint256 rewardPerClip,
         uint256 maxPayouts,
         uint64 deadline,
@@ -107,6 +130,7 @@ contract SomniaClipBounty is ReentrancyGuard {
         uint256 receipt
     );
     event ClipRejected(uint256 indexed bountyId, uint256 indexed submissionId, string reason);
+    event ClipRetryScheduled(uint256 indexed bountyId, uint256 indexed submissionId, uint256 observedViews, uint256 nextCheckAt);
     event PayoutSent(uint256 indexed bountyId, uint256 indexed submissionId, address indexed clipper, uint256 amount);
     event NativeCreditWithdrawn(address indexed account, uint256 amount);
     event AgentRebateCredited(address indexed account, uint256 amount);
@@ -119,9 +143,14 @@ contract SomniaClipBounty is ReentrancyGuard {
     error BountyNotOpen();
     error BountyExpired();
     error BountyFull();
-    error UnauthorizedCreator();
+    error AlreadyRegistered();
+    error WrongAccountRole();
+    error UnauthorizedBrand();
+    error UnauthorizedClipper();
+    error UnauthorizedAutomation();
     error SubmissionMissing();
     error SubmissionNotReady();
+    error VerificationCooldown(uint256 nextCheckAt);
     error UnderfundedBounty(uint256 required, uint256 provided);
     error UnderfundedVerification(uint256 required, uint256 provided);
     error InsufficientNativeCredit(uint256 available, uint256 required);
@@ -130,7 +159,23 @@ contract SomniaClipBounty is ReentrancyGuard {
     error NativeTransferFailed();
 
     constructor() {
+        owner = msg.sender;
+        automationOperator = msg.sender;
         platform = IAgentRequester(SOMNIA_AGENTS_TESTNET);
+    }
+
+    function setAutomationOperator(address operator) external {
+        if (msg.sender != owner) revert UnauthorizedAutomation();
+        automationOperator = operator;
+        emit AutomationOperatorSet(operator);
+    }
+
+    function registerBrand(string calldata name) external {
+        _register(AccountRole.Brand, name);
+    }
+
+    function registerClipper(string calldata name) external {
+        _register(AccountRole.Clipper, name);
     }
 
     function createBounty(
@@ -142,6 +187,7 @@ contract SomniaClipBounty is ReentrancyGuard {
         uint256 maxPayouts,
         uint64 deadline
     ) external payable nonReentrant returns (uint256 bountyId) {
+        _requireRole(AccountRole.Brand);
         _validateText(title, MAX_TITLE_BYTES);
         _validateText(campaignUrl, MAX_URL_BYTES);
         _validateText(rules, MAX_RULES_BYTES);
@@ -155,7 +201,7 @@ contract SomniaClipBounty is ReentrancyGuard {
 
         bountyId = ++bountyCount;
         bounties[bountyId] = Bounty({
-            creator: msg.sender,
+            brand: msg.sender,
             title: title,
             campaignUrl: campaignUrl,
             rules: rules,
@@ -170,6 +216,7 @@ contract SomniaClipBounty is ReentrancyGuard {
             status: BountyStatus.Open,
             createdAt: block.timestamp
         });
+        brandBountyIds[msg.sender].push(bountyId);
 
         emit BountyCreated(bountyId, msg.sender, rewardPerClip, maxPayouts, deadline, title, campaignUrl);
         emit BountyFunded(bountyId, msg.sender, msg.value);
@@ -178,6 +225,7 @@ contract SomniaClipBounty is ReentrancyGuard {
     function fundBounty(uint256 bountyId) external payable nonReentrant {
         if (msg.value == 0) revert EmptyValue();
         Bounty storage bounty = _bounty(bountyId);
+        if (bounty.brand != msg.sender) revert UnauthorizedBrand();
         if (bounty.status != BountyStatus.Open) revert BountyNotOpen();
         bounty.totalFunded += msg.value;
         emit BountyFunded(bountyId, msg.sender, msg.value);
@@ -185,7 +233,7 @@ contract SomniaClipBounty is ReentrancyGuard {
 
     function closeBounty(uint256 bountyId) external nonReentrant returns (uint256 refunded) {
         Bounty storage bounty = _bounty(bountyId);
-        if (bounty.creator != msg.sender) revert UnauthorizedCreator();
+        if (bounty.brand != msg.sender) revert UnauthorizedBrand();
         if (bounty.status != BountyStatus.Open) revert BountyNotOpen();
 
         bounty.status = BountyStatus.Closed;
@@ -203,6 +251,7 @@ contract SomniaClipBounty is ReentrancyGuard {
         nonReentrant
         returns (uint256 submissionId)
     {
+        _requireRole(AccountRole.Clipper);
         _validateText(clipUrl, MAX_URL_BYTES);
         if (!_isYouTubeUrl(bytes(clipUrl))) revert InvalidYouTubeUrl();
 
@@ -222,18 +271,27 @@ contract SomniaClipBounty is ReentrancyGuard {
             receipt: 0,
             observedViews: 0,
             verificationOutput: "",
-            paidAmount: 0
+            paidAmount: 0,
+            lastCheckedAt: 0,
+            nextCheckAt: 0
         });
 
         bounty.submissionCount += 1;
         bountySubmissionIds[bountyId].push(submissionId);
+        clipperSubmissionIds[msg.sender].push(submissionId);
 
         emit ClipSubmitted(bountyId, submissionId, msg.sender, clipUrl);
     }
 
     function requestVerification(uint256 submissionId) external payable nonReentrant returns (uint256 requestId) {
         Submission storage submission = _submission(submissionId);
-        if (submission.status != SubmissionStatus.Submitted) revert SubmissionNotReady();
+        if (submission.clipper != msg.sender && msg.sender != automationOperator) revert UnauthorizedClipper();
+        if (submission.status != SubmissionStatus.Submitted && submission.status != SubmissionStatus.PendingRetry) {
+            revert SubmissionNotReady();
+        }
+        if (submission.nextCheckAt != 0 && block.timestamp < submission.nextCheckAt) {
+            revert VerificationCooldown(submission.nextCheckAt);
+        }
 
         Bounty storage bounty = _bounty(submission.bountyId);
         if (bounty.status != BountyStatus.Open) revert BountyNotOpen();
@@ -286,6 +344,7 @@ contract SomniaClipBounty is ReentrancyGuard {
         submission.receipt = receipt;
         submission.observedViews = observedViews;
         submission.verificationOutput = _toString(observedViews);
+        submission.lastCheckedAt = block.timestamp;
 
         emit VerificationReceived(submissionId, requestId, status, observedViews, receipt);
 
@@ -295,7 +354,9 @@ contract SomniaClipBounty is ReentrancyGuard {
         }
 
         if (observedViews < bounty.minViews) {
-            _reject(submission.bountyId, submissionId, submission, "view threshold not met");
+            submission.status = SubmissionStatus.PendingRetry;
+            submission.nextCheckAt = block.timestamp + VERIFICATION_RETRY_COOLDOWN;
+            emit ClipRetryScheduled(submission.bountyId, submissionId, observedViews, submission.nextCheckAt);
             return;
         }
 
@@ -314,6 +375,7 @@ contract SomniaClipBounty is ReentrancyGuard {
         bounty.totalPaid += reward;
         submission.status = SubmissionStatus.Paid;
         submission.paidAmount = reward;
+        submission.nextCheckAt = 0;
 
         _sendNative(submission.clipper, reward);
         emit PayoutSent(submission.bountyId, submissionId, submission.clipper, reward);
@@ -341,6 +403,23 @@ contract SomniaClipBounty is ReentrancyGuard {
     function getBountySubmissionIds(uint256 bountyId) external view returns (uint256[] memory ids) {
         _bounty(bountyId);
         return bountySubmissionIds[bountyId];
+    }
+
+    function getBrandBountyIds(address brand) external view returns (uint256[] memory ids) {
+        return brandBountyIds[brand];
+    }
+
+    function getClipperSubmissionIds(address clipper) external view returns (uint256[] memory ids) {
+        return clipperSubmissionIds[clipper];
+    }
+
+    function canRequestVerification(uint256 submissionId) external view returns (bool ready, uint256 nextCheckAt) {
+        Submission storage submission = _submission(submissionId);
+        Bounty storage bounty = _bounty(submission.bountyId);
+        bool retryable = submission.status == SubmissionStatus.Submitted || submission.status == SubmissionStatus.PendingRetry;
+        ready = retryable && bounty.status == BountyStatus.Open && bounty.approvedCount < bounty.maxPayouts
+            && block.timestamp <= bounty.deadline && block.timestamp >= submission.nextCheckAt;
+        nextCheckAt = submission.nextCheckAt;
     }
 
     function _verificationPayload(Bounty storage bounty, Submission storage submission)
@@ -407,6 +486,18 @@ contract SomniaClipBounty is ReentrancyGuard {
 
     function _availableEscrow(Bounty storage bounty) internal view returns (uint256) {
         return bounty.totalFunded - bounty.totalPaid;
+    }
+
+    function _register(AccountRole role, string calldata name) internal {
+        _validateText(name, MAX_TITLE_BYTES);
+        Profile storage profile = profiles[msg.sender];
+        if (profile.role != AccountRole.None) revert AlreadyRegistered();
+        profiles[msg.sender] = Profile({role: role, name: name, registeredAt: block.timestamp});
+        emit ProfileRegistered(msg.sender, role, name);
+    }
+
+    function _requireRole(AccountRole role) internal view {
+        if (profiles[msg.sender].role != role) revert WrongAccountRole();
     }
 
     function _validateText(string calldata value, uint256 maxBytes) internal pure {

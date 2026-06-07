@@ -1,0 +1,21 @@
+name: Recheck submissions
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+jobs:
+  recheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Call Reel recheck endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          RECHECK_URL: https://tryreel.vercel.app/api/recheck-submissions
+        run: |
+          test -n "$CRON_SECRET"
+          curl --fail --show-error --silent \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$RECHECK_URL"

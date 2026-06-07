@@ -8,14 +8,14 @@ const flowItems = [
   { label: "Fund bounty", tone: "orange" },
   { label: "Submit public URL", tone: "pink" },
   { label: "Verify metrics", tone: "lime" },
-  { label: "Pay creator", tone: "yellow" },
+  { label: "Pay clipper", tone: "yellow" },
 ] as const;
 
 const featureCards = [
   {
     tone: "lime",
     title: "Escrow first",
-    body: "Brands fund the bounty up front. The contract holds STT until a creator's public URL clears the metric check.",
+    body: "Brands fund the bounty up front. The contract holds STT until a clipper's public YouTube URL clears the metric check.",
   },
   {
     tone: "cyan",
@@ -25,7 +25,7 @@ const featureCards = [
   {
     tone: "yellow",
     title: "Direct payout",
-    body: "If the threshold is met, the contract pays the creator from escrow. The app never routes the payout through itself.",
+    body: "If the threshold is met, the contract pays the clipper from escrow. The app never routes the payout through itself.",
   },
 ] as const;
 
@@ -36,7 +36,7 @@ const howItWorks = [
   },
   {
     title: "Collect public links",
-    body: "Creators submit public campaign URLs against the bounty. Today the contract accepts YouTube links for live view checks.",
+    body: "Clippers submit public YouTube clip URLs against the bounty. Today YouTube is the live verification surface.",
   },
   {
     title: "Ask Somnia to verify",
@@ -55,7 +55,7 @@ const faqs = [
       "From the submitted public URL. In the current live flow, that URL must be from YouTube because the deployed contract verifies YouTube views.",
   },
   {
-    question: "Does the app hold creator funds?",
+    question: "Does the app hold clipper funds?",
     answer:
       "No. The brand signs the funding transaction and STT sits in escrow until paid or refunded.",
   },
@@ -67,7 +67,7 @@ const faqs = [
   {
     question: "Who receives payment?",
     answer:
-      "The creator address that submitted the qualifying URL receives STT directly from the contract.",
+      "The clipper address that submitted the qualifying URL receives STT directly from the contract.",
   },
 ] as const;
 
@@ -96,11 +96,11 @@ export default function Home() {
         <section className="agent-hero" aria-labelledby="agent-hero-title">
           <div className="agent-hero__copy">
             <h1 id="agent-hero-title">
-              Turn <span className="agent-highlight agent-highlight--purple">public proof</span> into paid{" "}
+              Turn <span className="agent-highlight agent-highlight--purple">YouTube clips</span> into paid{" "}
               <span className="agent-highlight agent-highlight--orange">Reel bounties</span>.
             </h1>
             <p>
-              Brands create funded campaigns. Creators submit public links. Somnia verifies the metric before STT leaves escrow. YouTube views are live first.
+              Brands fund clip campaigns. Clippers submit public YouTube links. The on-chain agent checks visible views before STT leaves escrow.
             </p>
             <div className="agent-hero__actions">
               <LandingDashboardAction className="agent-button agent-button--primary">
@@ -114,7 +114,7 @@ export default function Home() {
               <aside className="agent-preview-rail" aria-label="Preview navigation">
                 <span className="agent-preview-rail__brand">Reel</span>
                 <span className="agent-preview-rail__item agent-preview-rail__item--active">Brands</span>
-                <span className="agent-preview-rail__item">Creators</span>
+                <span className="agent-preview-rail__item">Clippers</span>
                 <span className="agent-preview-rail__item">Verify</span>
               </aside>
 
@@ -137,9 +137,9 @@ export default function Home() {
                   </section>
 
                   <section className="agent-preview-card">
-                    <span>Creators</span>
+                    <span>Clippers</span>
                     <h2>Join bounties</h2>
-                    <p>Pick a funded bounty, submit a public YouTube URL, and request metric verification.</p>
+                    <p>Pick a funded clip bounty, submit a public YouTube URL, and request view verification.</p>
                     <div>
                       <small>Submit link</small>
                       <small>Verify views</small>
@@ -163,8 +163,8 @@ export default function Home() {
 
         <section className="agent-section agent-features" id="features" aria-labelledby="features-title">
           <div className="agent-section__header">
-            <h2 id="features-title">Built for brand-funded bounty drops.</h2>
-            <p>One contract surface: bounty funding, URL submission, Somnia verification, payout, and unused escrow refund.</p>
+            <h2 id="features-title">Built for brand-funded clip drops.</h2>
+            <p>One contract surface: bounty funding, clipper URL submission, agent verification, payout, and unused escrow refund.</p>
           </div>
           <div className="agent-feature-grid">
             {featureCards.map((feature) => (
@@ -180,7 +180,7 @@ export default function Home() {
         <section className="agent-section agent-how" id="how" aria-labelledby="how-title">
           <div className="agent-section__header">
             <h2 id="how-title">How it works</h2>
-            <p>The app follows the contract, not a hidden server ledger. Every bounty and submission can be read from Somnia.</p>
+            <p>The app follows the contract, not a hidden server ledger. Every bounty and submitted clip can be read on-chain.</p>
           </div>
           <ol className="agent-step-list">
             {howItWorks.map((step, index) => (

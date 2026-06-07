@@ -4,18 +4,18 @@ import { useEffect, useState } from "react";
 import { BadgeCheck, CircleDollarSign, LayoutGrid, Plus } from "lucide-react";
 
 const navItems = [
-  { href: "#creators", full: "Creators", short: "Join", icon: LayoutGrid },
+  { href: "#clippers", full: "Clippers", short: "Join", icon: LayoutGrid },
+  { href: "#verify", full: "Verify views", short: "Views", icon: BadgeCheck },
   { href: "#brands", full: "Brands", short: "Make", icon: Plus },
-  { href: "#bounty-task-verify", full: "Verify views", short: "Views", icon: BadgeCheck },
-  { href: "#bounty-task-funds", full: "Escrow funds", short: "STT", icon: CircleDollarSign },
+  { href: "#funds", full: "Escrow funds", short: "STT", icon: CircleDollarSign },
 ] as const;
 
 export default function DashboardSidebar() {
-  const [activeHref, setActiveHref] = useState("#bounties");
+  const [activeHref, setActiveHref] = useState("#clippers");
 
   useEffect(() => {
     function syncHash() {
-      setActiveHref(window.location.hash || "#bounties");
+      setActiveHref(window.location.hash || "#clippers");
     }
 
     syncHash();
@@ -24,18 +24,22 @@ export default function DashboardSidebar() {
   }, []);
 
   return (
-    <div className="sidebar__nav" aria-label="Reel bounty navigation">
-      <nav className="sidebar__group" aria-label="Creator bounty workflow">
-        <span className="sidebar__section-label sidebar__label-full">Bounty flow</span>
+    <div className="sidebar__nav" aria-label="Reel workspace navigation">
+      <nav className="sidebar__group" aria-label="Reel workspace">
+        <span className="sidebar__section-label sidebar__label-full">Workspace</span>
         {navItems.map((item) => {
           const Icon = item.icon;
           const normalizedHref =
             activeHref === "#bounty-task-submit" || activeHref === "#bounties"
-              ? "#creators"
+              ? "#clippers"
               : activeHref === "#bounty-task-create"
                 ? "#brands"
-                : activeHref;
-          const active = normalizedHref === item.href || (normalizedHref === "" && item.href === "#creators");
+                : activeHref === "#bounty-task-verify"
+                  ? "#verify"
+                  : activeHref === "#bounty-task-funds"
+                    ? "#funds"
+                    : activeHref;
+          const active = normalizedHref === item.href || (normalizedHref === "" && item.href === "#clippers");
           return (
             <a
               className={`sidebar__link ${active ? "sidebar__link--active" : ""}`}

@@ -10,7 +10,7 @@ export const somniaAgentsPlatformAddress = "0x037Bb9C718F3f7fe5eCBDB0b600D607b52
 export const somniaParseWebsiteAgentId = 12875401142070969085n;
 
 export const bountyStatusLabels = ["None", "Open", "Closed"] as const;
-export const submissionStatusLabels = ["None", "Submitted", "Checking", "Rejected", "Paid"] as const;
+export const submissionStatusLabels = ["None", "Submitted", "Checking", "Pending retry", "Rejected", "Paid"] as const;
 export const responseStatusLabels = ["None", "Pending", "Success", "Failed", "Timed out"] as const;
 
 export const clipBountyAbi = [
@@ -41,6 +41,48 @@ export const clipBountyAbi = [
     stateMutability: "view",
     inputs: [],
     outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "VERIFICATION_RETRY_COOLDOWN",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "owner",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "address" }],
+  },
+  {
+    type: "function",
+    name: "automationOperator",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "address" }],
+  },
+  {
+    type: "function",
+    name: "setAutomationOperator",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "operator", type: "address" }],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "registerBrand",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "name", type: "string" }],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "registerClipper",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "name", type: "string" }],
+    outputs: [],
   },
   {
     type: "function",
@@ -122,6 +164,30 @@ export const clipBountyAbi = [
   },
   {
     type: "function",
+    name: "getBrandBountyIds",
+    stateMutability: "view",
+    inputs: [{ name: "brand", type: "address" }],
+    outputs: [{ name: "ids", type: "uint256[]" }],
+  },
+  {
+    type: "function",
+    name: "getClipperSubmissionIds",
+    stateMutability: "view",
+    inputs: [{ name: "clipper", type: "address" }],
+    outputs: [{ name: "ids", type: "uint256[]" }],
+  },
+  {
+    type: "function",
+    name: "canRequestVerification",
+    stateMutability: "view",
+    inputs: [{ name: "submissionId", type: "uint256" }],
+    outputs: [
+      { name: "ready", type: "bool" },
+      { name: "nextCheckAt", type: "uint256" },
+    ],
+  },
+  {
+    type: "function",
     name: "bountyCount",
     stateMutability: "view",
     inputs: [],
@@ -143,11 +209,22 @@ export const clipBountyAbi = [
   },
   {
     type: "function",
+    name: "profiles",
+    stateMutability: "view",
+    inputs: [{ name: "", type: "address" }],
+    outputs: [
+      { name: "role", type: "uint8" },
+      { name: "name", type: "string" },
+      { name: "registeredAt", type: "uint256" },
+    ],
+  },
+  {
+    type: "function",
     name: "bounties",
     stateMutability: "view",
     inputs: [{ name: "", type: "uint256" }],
     outputs: [
-      { name: "creator", type: "address" },
+      { name: "brand", type: "address" },
       { name: "title", type: "string" },
       { name: "campaignUrl", type: "string" },
       { name: "rules", type: "string" },
@@ -179,6 +256,8 @@ export const clipBountyAbi = [
       { name: "observedViews", type: "uint256" },
       { name: "verificationOutput", type: "string" },
       { name: "paidAmount", type: "uint256" },
+      { name: "lastCheckedAt", type: "uint256" },
+      { name: "nextCheckAt", type: "uint256" },
     ],
   },
 ] as const;

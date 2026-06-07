@@ -2,8 +2,8 @@
   "chain": "somnia_testnet",
   "chainId": 50312,
   "explorer": "https://shannon-explorer.somnia.network",
-  "deployedAt": "2026-06-06T22:51:01Z",
+  "deployedAt": "2026-06-07T05:59:05Z",
   "addresses": {
-    "SomniaClipBounty": "0xee6ff9ce73148bd983fcf515bde168468f4f431e"
+    "ReelBounty": "0xd675eA5418b10888Ef74243c739831db85B42676"
   }
 }

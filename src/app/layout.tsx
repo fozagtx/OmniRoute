@@ -4,10 +4,10 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Reel",
-  description: "Fund creator bounties, verify public metrics with Somnia Agents, and pay creators from escrow.",
+  description: "Fund clip bounties, verify public YouTube views with an on-chain agent, and pay clippers from escrow.",
   openGraph: {
     title: "Reel",
-    description: "Fund creator bounties, verify public metrics with Somnia Agents, and pay creators from escrow.",
+    description: "Fund clip bounties, verify public YouTube views with an on-chain agent, and pay clippers from escrow.",
     type: "website",
   },
 };

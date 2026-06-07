@@ -15,7 +15,7 @@ const featureCards = [
   {
     tone: "lime",
     title: "Escrow first",
-    body: "Creators fund the bounty up front. The contract holds STT until a submitted public URL clears the metric check.",
+    body: "Brands fund the bounty up front. The contract holds STT until a creator's public URL clears the metric check.",
   },
   {
     tone: "cyan",
@@ -57,7 +57,7 @@ const faqs = [
   {
     question: "Does the app hold creator funds?",
     answer:
-      "No. The creator signs a contract transaction and funds sit in escrow until paid or refunded.",
+      "No. The brand signs the funding transaction and STT sits in escrow until paid or refunded.",
   },
   {
     question: "What can the agent verify?",
@@ -96,11 +96,11 @@ export default function Home() {
         <section className="agent-hero" aria-labelledby="agent-hero-title">
           <div className="agent-hero__copy">
             <h1 id="agent-hero-title">
-              Turn <span className="agent-highlight agent-highlight--purple">creator proof</span> into paid{" "}
+              Turn <span className="agent-highlight agent-highlight--purple">public proof</span> into paid{" "}
               <span className="agent-highlight agent-highlight--orange">Reel bounties</span>.
             </h1>
             <p>
-              Create a funded Reel campaign, collect public creator links, and have Somnia verify the metric before STT leaves escrow. YouTube views are live first.
+              Brands create funded campaigns. Creators submit public links. Somnia verifies the metric before STT leaves escrow. YouTube views are live first.
             </p>
             <div className="agent-hero__actions">
               <LandingDashboardAction className="agent-button agent-button--primary">
@@ -109,53 +109,44 @@ export default function Home() {
             </div>
           </div>
 
-          <figure className="agent-visual" aria-label="Reel bounty workflow">
-            <div className="agent-visual__board">
-              <div className="agent-visual__topbar">
-                <span>Reel</span>
-                <LandingDashboardAction>Create bounty</LandingDashboardAction>
-              </div>
+          <figure className="agent-visual" aria-label="Reel two-persona dashboard preview">
+            <div className="agent-visual__board agent-visual__board--workspace">
+              <aside className="agent-preview-rail" aria-label="Preview navigation">
+                <span className="agent-preview-rail__brand">Reel</span>
+                <span className="agent-preview-rail__item agent-preview-rail__item--active">Brands</span>
+                <span className="agent-preview-rail__item">Creators</span>
+                <span className="agent-preview-rail__item">Verify</span>
+              </aside>
 
-              <div className="agent-visual__grid">
-                <section className="agent-proof-card" aria-label="Live proof card">
-                  <span>Verified metric</span>
-                  <strong>Public URL</strong>
-                  <p>YouTube views are read from the creator link submitted to the contract.</p>
-                  <div>
-                    <small>Paid</small>
-                    <small>On-chain</small>
-                    <small>Escrow</small>
-                  </div>
-                </section>
+              <div className="agent-preview-main">
+                <div className="agent-preview-topbar">
+                  <span>Bounty workspace</span>
+                  <LandingDashboardAction>Create bounty</LandingDashboardAction>
+                </div>
 
-                <section className="agent-visual__console" aria-label="Allowed networks">
-                  <span>Allowed networks</span>
-                  <div className="agent-platforms" aria-label="Supported platforms">
-                    <span className="agent-platform-pill agent-platform-pill--live">
-                      <span className="platform-logo platform-logo--youtube" aria-hidden />
-                      <span>YouTube</span>
-                      <small>Live</small>
-                    </span>
-                    <span className="agent-platform-pill">
-                      <span className="platform-logo platform-logo--twitter" aria-hidden>t</span>
-                      <span>Twitter</span>
-                      <small>Soon</small>
-                    </span>
-                    <span className="agent-platform-pill">
-                      <span className="platform-logo platform-logo--instagram" aria-hidden />
-                      <span>Instagram</span>
-                      <small>Soon</small>
-                    </span>
-                  </div>
-                </section>
-              </div>
+                <div className="agent-preview-personas">
+                  <section className="agent-preview-card agent-preview-card--brand">
+                    <span>Brands</span>
+                    <h2>Create bounties</h2>
+                    <p>Fund a campaign, set view targets, and keep unused escrow refundable from the contract.</p>
+                    <div>
+                      <small>Fund</small>
+                      <small>Set rules</small>
+                      <small>Manage escrow</small>
+                    </div>
+                  </section>
 
-              <div className="agent-visual__flow" aria-label="Reel contract flow">
-                <span>Fund</span>
-                <i aria-hidden />
-                <span>Verify</span>
-                <i aria-hidden />
-                <span>Pay</span>
+                  <section className="agent-preview-card">
+                    <span>Creators</span>
+                    <h2>Join bounties</h2>
+                    <p>Pick a funded bounty, submit a public YouTube URL, and request metric verification.</p>
+                    <div>
+                      <small>Submit link</small>
+                      <small>Verify views</small>
+                      <small>Claim payout</small>
+                    </div>
+                  </section>
+                </div>
               </div>
             </div>
           </figure>
@@ -172,7 +163,7 @@ export default function Home() {
 
         <section className="agent-section agent-features" id="features" aria-labelledby="features-title">
           <div className="agent-section__header">
-            <h2 id="features-title">Built for creator bounty drops.</h2>
+            <h2 id="features-title">Built for brand-funded bounty drops.</h2>
             <p>One contract surface: bounty funding, URL submission, Somnia verification, payout, and unused escrow refund.</p>
           </div>
           <div className="agent-feature-grid">

@@ -4520,3 +4520,170 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 }
+
+/* Hero app preview: two-persona dashboard, not a loose card stack. */
+.agent-visual__board--workspace {
+  min-height: 640px;
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 0;
+  padding: 12px;
+  overflow: hidden;
+}
+
+.agent-preview-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 14px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: inset 0 0 0 1px rgba(23, 32, 49, 0.08);
+}
+
+.agent-preview-rail__brand {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  color: #172031;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.agent-preview-rail__item {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 13px;
+  color: #526173;
+  font-weight: 700;
+}
+
+.agent-preview-rail__item--active {
+  background: #d9f7df;
+  color: #187640;
+}
+
+.agent-preview-main {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 18px;
+  padding: 10px 10px 10px 22px;
+}
+
+.agent-preview-topbar {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.agent-preview-topbar span {
+  color: #526173;
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.agent-preview-topbar a,
+.agent-preview-topbar button {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 13px;
+  background: #172031;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.agent-preview-personas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+.agent-preview-card {
+  min-height: 420px;
+  display: grid;
+  align-content: space-between;
+  gap: 18px;
+  padding: 28px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: inset 0 0 0 1px rgba(23, 32, 49, 0.08), 0 16px 38px rgba(25, 31, 28, 0.08);
+}
+
+.agent-preview-card--brand {
+  background: linear-gradient(135deg, rgba(217, 247, 223, 0.88), rgba(255, 255, 255, 0.78));
+}
+
+.agent-preview-card > span {
+  color: #187640;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.agent-preview-card h2 {
+  margin: 0;
+  color: #172031;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 2.2rem;
+  font-weight: 400;
+  line-height: 1.02;
+}
+
+.agent-preview-card p {
+  margin: 0;
+  color: #526173;
+  font-size: 1rem;
+  line-height: 1.42;
+}
+
+.agent-preview-card div {
+  display: grid;
+  gap: 8px;
+}
+
+.agent-preview-card small {
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: rgba(23, 32, 49, 0.06);
+  color: #172031;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+@media (max-width: 1100px) {
+  .agent-visual__board--workspace {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .agent-preview-rail {
+    flex-direction: row;
+    align-items: center;
+    overflow-x: auto;
+  }
+
+  .agent-preview-main {
+    padding: 18px 4px 4px;
+  }
+
+  .agent-preview-personas {
+    grid-template-columns: 1fr;
+  }
+
+  .agent-preview-card {
+    min-height: 280px;
+  }
+}

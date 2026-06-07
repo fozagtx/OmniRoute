@@ -727,7 +727,7 @@ export default function ClipBountyApp() {
                 <p>
                   {activeLane === "brands"
                     ? "Brands manage campaign terms, escrow, and unused credit from this screen."
-                    : "Participants choose a funded bounty, submit a public YouTube URL, then request the on-chain view check."}
+                    : "Creators choose a funded bounty, submit a public YouTube URL, then request the on-chain view check."}
                 </p>
               </div>
               <div

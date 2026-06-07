@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useWallet } from "@/lib/wallet";
 
 type LandingDashboardActionProps = {
@@ -15,7 +16,13 @@ function shortAddress(address: string) {
 
 export default function LandingWalletButton() {
   const { address, connect, disconnect, error, isConnected, isConnecting } = useWallet();
+  const router = useRouter();
   const label = isConnected && address ? shortAddress(address) : isConnecting ? "Connecting" : "Connect wallet";
+
+  async function connectAndOpenDashboard() {
+    const connectedAddress = await connect();
+    if (connectedAddress) router.push("/dashboard");
+  }
 
   return (
     <>
@@ -25,7 +32,7 @@ export default function LandingWalletButton() {
         aria-label={isConnected && address ? `Disconnect wallet ${shortAddress(address)}` : "Connect wallet"}
         disabled={!isConnected && isConnecting}
         title={error || label}
-        onClick={() => (isConnected ? disconnect() : void connect())}
+        onClick={() => (isConnected ? disconnect() : void connectAndOpenDashboard())}
       >
         <span className="agent-wallet-button__dot" data-connected={isConnected ? "true" : "false"} aria-hidden />
         <span>{label}</span>
@@ -41,6 +48,12 @@ export default function LandingWalletButton() {
 
 export function LandingDashboardAction({ children, className }: LandingDashboardActionProps) {
   const { connect, isConnected, isConnecting } = useWallet();
+  const router = useRouter();
+
+  async function connectAndOpenDashboard() {
+    const connectedAddress = await connect();
+    if (connectedAddress) router.push("/dashboard");
+  }
 
   if (isConnected) {
     return (
@@ -56,7 +69,7 @@ export function LandingDashboardAction({ children, className }: LandingDashboard
       className={className}
       aria-label="Connect wallet to open dashboard"
       disabled={isConnecting}
-      onClick={() => void connect()}
+      onClick={() => void connectAndOpenDashboard()}
     >
       {isConnecting ? "Connecting" : children}
     </button>

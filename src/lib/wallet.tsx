@@ -129,7 +129,7 @@ type WalletContextValue = {
   isConnecting: boolean;
   publicClient: PublicClientLite;
   walletClient?: WalletClientLite;
-  connect: () => Promise<void>;
+  connect: () => Promise<Address | undefined>;
   disconnect: () => void;
 };
 
@@ -165,7 +165,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const provider = getInjectedProvider();
     if (!provider) {
       setError("No injected wallet detected.");
-      return;
+      return undefined;
     }
 
     setError("");
@@ -176,8 +176,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       if (!nextAddress) throw new Error("Wallet did not return a valid account.");
       await ensureSomniaChain(provider);
       setAddress(nextAddress);
+      return nextAddress;
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "Wallet connection failed.");
+      return undefined;
     } finally {
       setIsConnecting(false);
     }

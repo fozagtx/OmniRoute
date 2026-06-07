@@ -574,7 +574,7 @@ export default function ClipBountyApp() {
       <header className="clip-app__head">
         <div>
           <h1 className="display">Reel</h1>
-          <p>Fund creator rewards, submit public URLs, and let Somnia verify the metric before escrow pays. YouTube views are live first.</p>
+          <p>Create funded bounties, submit public URLs, and let Somnia verify the metric before escrow pays. YouTube views are live first.</p>
         </div>
         <div className="clip-contract-chip">
           <span>Contract</span>

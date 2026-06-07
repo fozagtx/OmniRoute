@@ -4415,3 +4415,108 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 }
+
+/* Final dashboard shell: desktop is a left rail, never a top slab. */
+.dashboard-layout,
+.dashboard-layout.dashboard-layout--expanded,
+.dashboard-layout.dashboard-layout--collapsed {
+  width: 100%;
+  min-height: 100dvh;
+  display: grid !important;
+  grid-template-columns: 252px minmax(0, 1fr) !important;
+  align-items: start;
+  gap: 18px;
+  padding: 20px !important;
+}
+
+.dashboard-layout .sidebar,
+.dashboard-layout .sidebar.sidebar--expanded,
+.dashboard-layout .sidebar.sidebar--collapsed {
+  grid-column: 1;
+  position: sticky !important;
+  top: 20px;
+  left: auto !important;
+  width: 100% !important;
+  min-width: 0;
+  max-height: calc(100dvh - 40px);
+  margin: 0 !important;
+  transform: none !important;
+  align-self: start;
+}
+
+.dashboard-layout .dashboard-main {
+  grid-column: 2;
+  min-width: 0;
+  width: 100%;
+  padding: 0 !important;
+}
+
+.clip-lanes {
+  width: fit-content;
+  max-width: 100%;
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(170px, auto));
+  gap: 6px;
+  margin: 0;
+  padding: 5px;
+  border: 1px solid rgba(26, 25, 23, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.48);
+}
+
+.clip-lane-card {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 13px;
+  box-shadow: none;
+}
+
+.clip-lane-card span {
+  font-size: 0.72rem;
+}
+
+.clip-lane-card strong {
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 750;
+  line-height: 1;
+}
+
+.clip-lane-card p {
+  display: none;
+}
+
+.clip-lane-card[data-active="true"] {
+  box-shadow: inset 3px 0 0 rgba(38, 196, 105, 0.88);
+}
+
+@media (max-width: 900px) {
+  .dashboard-layout,
+  .dashboard-layout.dashboard-layout--expanded,
+  .dashboard-layout.dashboard-layout--collapsed {
+    display: block !important;
+    padding: 12px !important;
+  }
+
+  .dashboard-layout .sidebar,
+  .dashboard-layout .sidebar.sidebar--expanded,
+  .dashboard-layout .sidebar.sidebar--collapsed {
+    position: static !important;
+    width: 100% !important;
+    max-height: none;
+    margin-bottom: 12px !important;
+  }
+
+  .dashboard-layout .dashboard-main {
+    width: 100%;
+  }
+
+  .clip-lanes {
+    width: 100%;
+    grid-template-columns: 1fr;
+  }
+}

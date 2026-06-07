@@ -14,7 +14,7 @@ export default function DashboardLayout({
   const walletLabel = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : isConnecting ? "Connecting" : "Connect";
 
   return (
-    <div className="dashboard-layout">
+    <div className="dashboard-layout dashboard-layout--expanded">
       <aside className="sidebar">
         <a className="sidebar__brand" href="/" aria-label="Reel home">
           <span className="brand__mark" aria-hidden>

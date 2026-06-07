@@ -97,7 +97,7 @@ export default function Home() {
           <div className="agent-hero__copy">
             <h1 id="agent-hero-title">
               Turn <span className="agent-highlight agent-highlight--purple">creator proof</span> into paid{" "}
-              <span className="agent-highlight agent-highlight--orange">Reel rewards</span>.
+              <span className="agent-highlight agent-highlight--orange">Reel bounties</span>.
             </h1>
             <p>
               Create a funded Reel campaign, collect public creator links, and have Somnia verify the metric before STT leaves escrow. YouTube views are live first.

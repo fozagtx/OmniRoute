@@ -7,44 +7,44 @@ const flowItems = [
   { label: "Choose platform", tone: "cyan" },
   { label: "Fund bounty", tone: "orange" },
   { label: "Submit public URL", tone: "pink" },
-  { label: "Verify metrics", tone: "lime" },
-  { label: "Pay clipper", tone: "yellow" },
+  { label: "Agent checks result", tone: "lime" },
+  { label: "Release payout", tone: "yellow" },
 ] as const;
 
 const featureCards = [
   {
     tone: "lime",
-    title: "Escrow first",
-    body: "Brands fund the bounty up front. The contract holds STT until a clipper's public YouTube URL clears the metric check.",
+    title: "Pay for proof",
+    body: "Brands put STT into escrow first. Clippers get paid only when the submitted YouTube link clears the view target.",
   },
   {
     tone: "cyan",
-    title: "Network-ready surface",
-    body: "YouTube view checks are live first. Twitter and Instagram sit in the product lane without being sold as active contract support yet.",
+    title: "Agent checked",
+    body: "The contract asks Somnia's agent to read the public link and return the visible view count. No private channel login is needed.",
   },
   {
     tone: "yellow",
-    title: "Direct payout",
-    body: "If the threshold is met, the contract pays the clipper from escrow. The app never routes the payout through itself.",
+    title: "Clipper paid",
+    body: "When the result lands, the contract releases payment straight to the clipper wallet. Unused funds stay refundable to the brand.",
   },
 ] as const;
 
 const howItWorks = [
   {
-    title: "Create the bounty",
-    body: "Set the campaign URL, rules, minimum views, reward per clip, max payouts, and deadline. Funding is sent with the transaction.",
+    title: "Post the result",
+    body: "A brand sets the campaign URL, clip rules, minimum views, payout per clip, max payouts, and deadline.",
   },
   {
-    title: "Collect public links",
-    body: "Clippers submit public YouTube clip URLs against the bounty. Today YouTube is the live verification surface.",
+    title: "Fund the reward",
+    body: "The brand funds escrow in the same flow, so clippers can see the bounty is backed before they start pushing clips.",
   },
   {
-    title: "Ask Somnia to verify",
-    body: "The contract sends the submitted URL to Somnia's LLM Parse Website agent and asks for the visible metric.",
+    title: "Check the clip",
+    body: "A clipper submits a public YouTube URL. The contract sends that URL to Somnia's agent to read the visible views.",
   },
   {
-    title: "Pay or reject",
-    body: "The callback records the observed views. Qualified submissions are paid immediately; failed ones remain rejected on-chain.",
+    title: "Pay when it lands",
+    body: "If the views meet the target, the clipper is paid from escrow. If not, the scheduled check can try again later.",
   },
 ] as const;
 
@@ -96,11 +96,11 @@ export default function Home() {
         <section className="agent-hero" aria-labelledby="agent-hero-title">
           <div className="agent-hero__copy">
             <h1 id="agent-hero-title">
-              Turn <span className="agent-highlight agent-highlight--purple">YouTube clips</span> into paid{" "}
-              <span className="agent-highlight agent-highlight--orange">Reel bounties</span>.
+              Agents pay <span className="agent-highlight agent-highlight--purple">clippers</span> when{" "}
+              <span className="agent-highlight agent-highlight--orange">results land</span>.
             </h1>
             <p>
-              Brands fund clip campaigns. Clippers submit public YouTube links. The on-chain agent checks visible views before STT leaves escrow.
+              Brands fund view bounties. Clippers deliver public YouTube links. Reel checks the result with an on-chain agent before STT leaves escrow.
             </p>
             <div className="agent-hero__actions">
               <LandingDashboardAction className="agent-button agent-button--primary">
@@ -120,7 +120,7 @@ export default function Home() {
 
               <div className="agent-preview-main">
                 <div className="agent-preview-topbar">
-                  <span>Bounty workspace</span>
+                  <span>Result bounty workspace</span>
                   <LandingDashboardAction>Create bounty</LandingDashboardAction>
                 </div>
 
@@ -128,7 +128,7 @@ export default function Home() {
                   <section className="agent-preview-card agent-preview-card--brand">
                     <span>Brands</span>
                     <h2>Create bounties</h2>
-                    <p>Fund a campaign, set view targets, and keep unused escrow refundable from the contract.</p>
+                    <p>Post a result target, fund escrow, and pay only after the agent verifies the clip.</p>
                     <div>
                       <small>Fund</small>
                       <small>Set rules</small>
@@ -139,7 +139,7 @@ export default function Home() {
                   <section className="agent-preview-card">
                     <span>Clippers</span>
                     <h2>Join bounties</h2>
-                    <p>Pick a funded clip bounty, submit a public YouTube URL, and request view verification.</p>
+                    <p>Pick a funded bounty, deliver the clip, and get paid when the agent confirms the views.</p>
                     <div>
                       <small>Submit link</small>
                       <small>Verify views</small>
@@ -163,8 +163,8 @@ export default function Home() {
 
         <section className="agent-section agent-features" id="features" aria-labelledby="features-title">
           <div className="agent-section__header">
-            <h2 id="features-title">Built for brand-funded clip drops.</h2>
-            <p>One contract surface: bounty funding, clipper URL submission, agent verification, payout, and unused escrow refund.</p>
+            <h2 id="features-title">Built for result-backed clip work.</h2>
+            <p>One flow: brand funds the bounty, clipper submits the link, agent checks the result, contract releases payout.</p>
           </div>
           <div className="agent-feature-grid">
             {featureCards.map((feature) => (
@@ -180,7 +180,7 @@ export default function Home() {
         <section className="agent-section agent-how" id="how" aria-labelledby="how-title">
           <div className="agent-section__header">
             <h2 id="how-title">How it works</h2>
-            <p>The app follows the contract, not a hidden server ledger. Every bounty and submitted clip can be read on-chain.</p>
+            <p>The app follows the contract. Every bounty, submitted clip, check, and payout can be read on-chain.</p>
           </div>
           <ol className="agent-step-list">
             {howItWorks.map((step, index) => (

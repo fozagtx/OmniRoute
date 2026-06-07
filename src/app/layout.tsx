@@ -4,10 +4,10 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Reel",
-  description: "Fund clip bounties, verify public YouTube views with an on-chain agent, and pay clippers from escrow.",
+  description: "Agents unlock escrow payments for clippers when public YouTube results are verified on-chain.",
   openGraph: {
     title: "Reel",
-    description: "Fund clip bounties, verify public YouTube views with an on-chain agent, and pay clippers from escrow.",
+    description: "Agents unlock escrow payments for clippers when public YouTube results are verified on-chain.",
     type: "website",
   },
 };

@@ -191,6 +191,7 @@ export default function ClipBountyApp({ initialTask = "submit" }: ClipBountyAppP
   const [nativeCredit, setNativeCredit] = useState<bigint>();
   const [profileRole, setProfileRole] = useState<AccountRole>(0);
   const [profileName, setProfileName] = useState("");
+  const [profileLoaded, setProfileLoaded] = useState(false);
   const [bountyRows, setBountyRows] = useState<BountyRow[]>([]);
   const [submissionRows, setSubmissionRows] = useState<SubmissionRow[]>([]);
   const [selectedBounty, setSelectedBounty] = useState<BountyRow>();
@@ -212,7 +213,8 @@ export default function ClipBountyApp({ initialTask = "submit" }: ClipBountyAppP
   const connectedAddress = address?.toLowerCase();
   const nowSeconds = BigInt(Math.floor(Date.now() / 1000));
   const expectedRole: AccountRole = activeLane === "brands" ? 1 : 2;
-  const canUseWorkspace = isConnected && profileRole === expectedRole;
+  const profilePending = isConnected && !profileLoaded;
+  const canUseWorkspace = isConnected && profileLoaded && profileRole === expectedRole;
   const registeredAs = profileRole === 1 ? "Brand" : profileRole === 2 ? "Clipper" : "";
   const brandBountyRows = useMemo(() => {
     if (!connectedAddress || profileRole !== 1) return [];
@@ -286,10 +288,12 @@ export default function ClipBountyApp({ initialTask = "submit" }: ClipBountyAppP
       setNativeCredit(credit as bigint);
       setProfileRole((role === 1 || role === 2 ? role : 0) as AccountRole);
       setProfileName(name);
+      setProfileLoaded(true);
     } else {
       setNativeCredit(undefined);
       setProfileRole(0);
       setProfileName("");
+      setProfileLoaded(false);
     }
 
     return bountyTotal as bigint;
@@ -382,6 +386,12 @@ export default function ClipBountyApp({ initialTask = "submit" }: ClipBountyAppP
   useEffect(() => {
     void loadContractSnapshot().then((count) => loadBounties(count));
   }, [loadContractSnapshot, loadBounties]);
+
+  useEffect(() => {
+    setProfileLoaded(false);
+    setProfileRole(0);
+    setProfileName("");
+  }, [address]);
 
   useEffect(() => {
     void loadSelectedBounty();
@@ -781,7 +791,17 @@ export default function ClipBountyApp({ initialTask = "submit" }: ClipBountyAppP
               </div>
             ) : null}
 
-            {isConnected && !canUseWorkspace ? (
+            {profilePending ? (
+              <div className="task-block">
+                <div className="task-block__head">
+                  <Search aria-hidden size={18} />
+                  <strong>Reading wallet role</strong>
+                </div>
+                <p className="panel-state">Checking whether this wallet is a Brand or Clipper.</p>
+              </div>
+            ) : null}
+
+            {isConnected && profileLoaded && !canUseWorkspace ? (
               profileRole === 0 ? (
                 <form
                   className="task-block"
@@ -808,9 +828,17 @@ export default function ClipBountyApp({ initialTask = "submit" }: ClipBountyAppP
                     <strong>{registeredAs} wallet</strong>
                   </div>
                   <p className="panel-state">
-                    This wallet is registered as {registeredAs}. Use a different wallet for the{" "}
-                    {activeLane === "brands" ? "brand" : "clipper"} workspace.
+                    This wallet is already registered as {registeredAs}. Open the matching workspace for this wallet.
                   </p>
+                  <div className="form-actions form-actions--end">
+                    <button
+                      type="button"
+                      className="cta"
+                      onClick={() => activateTask(profileRole === 1 ? "create" : "submit")}
+                    >
+                      Open {profileRole === 1 ? "Brands" : "Clippers"}
+                    </button>
+                  </div>
                 </div>
               )
             ) : null}

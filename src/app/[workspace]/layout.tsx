@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useWallet } from "@/lib/wallet";
 
-export default function DashboardLayout({
+export default function WorkspaceLayout({
   children,
   sidebar,
 }: {

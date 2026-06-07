@@ -11,18 +11,18 @@ const taskBySection = {
 type DashboardSection = keyof typeof taskBySection;
 
 export function generateStaticParams() {
-  return Object.keys(taskBySection).map((section) => ({ section }));
+  return Object.keys(taskBySection).map((section) => ({ workspace: "dashboard", section }));
 }
 
-export default async function DashboardSectionPage({
+export default async function WorkspaceSectionPage({
   params,
 }: {
-  params: Promise<{ section: string }>;
+  params: Promise<{ workspace: string; section: string }>;
 }) {
-  const { section } = await params;
+  const { workspace, section } = await params;
   const task = taskBySection[section as DashboardSection];
 
-  if (!task) notFound();
+  if (workspace !== "dashboard" || !task) notFound();
 
   return <ClipBountyApp initialTask={task} />;
 }

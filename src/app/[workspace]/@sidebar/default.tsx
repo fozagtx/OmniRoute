@@ -11,7 +11,7 @@ const navItems = [
   { href: "/dashboard/funds", full: "Escrow funds", short: "STT", icon: CircleDollarSign },
 ] as const;
 
-export default function DashboardSidebar() {
+export default function WorkspaceSidebar() {
   const pathname = usePathname();
 
   return (

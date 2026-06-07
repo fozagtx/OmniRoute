@@ -4524,37 +4524,6 @@ textarea:focus {
   background: transparent;
 }
 
-.clip-workspace-head {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
-  gap: 18px;
-  padding: 28px;
-  border: 1px solid rgba(255, 255, 255, 0.62);
-  border-radius: 22px;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.34)),
-    rgba(255, 255, 255, 0.46);
-  box-shadow: var(--reel-glass-edge), var(--reel-glass-shadow), var(--reel-glass-rim);
-  backdrop-filter: blur(24px) saturate(1.35);
-  -webkit-backdrop-filter: blur(24px) saturate(1.35);
-}
-
-.clip-workspace-head .display {
-  margin: 2px 0 0;
-  color: #151412;
-  font-size: clamp(2.15rem, 5vw, 4.6rem);
-  line-height: 0.94;
-}
-
-.clip-workspace-head p:not(.label) {
-  max-width: 68ch;
-  margin: 10px 0 0;
-  color: #5d6572;
-  font-size: 1rem;
-  line-height: 1.5;
-}
-
 .clip-workspace {
   display: grid;
   grid-template-columns: minmax(280px, 0.42fr) minmax(0, 1fr);
@@ -4571,6 +4540,12 @@ textarea:focus {
   top: 20px;
   max-height: calc(100dvh - 40px);
   overflow: auto;
+}
+
+.dashboard-layout .cta--compact {
+  min-height: 34px;
+  padding: 7px 12px;
+  font-size: 0.82rem;
 }
 
 .dashboard-layout .clip-action-panel {
@@ -4632,15 +4607,6 @@ textarea:focus {
 }
 
 @media (max-width: 720px) {
-  .clip-workspace-head {
-    grid-template-columns: 1fr;
-    padding: 20px;
-  }
-
-  .clip-workspace-head .cta {
-    width: 100%;
-  }
-
   .dashboard-layout .clip-submission-row {
     grid-template-columns: 1fr;
   }

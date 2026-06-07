@@ -680,40 +680,23 @@ export default function ClipBountyApp({ initialTask = "submit" }: ClipBountyAppP
     submit: {
       label: "Clippers",
       title: "Join bounties",
-      copy:
-        "Choose a funded clip bounty, submit a public YouTube URL, and let the on-chain agent check the result before escrow pays.",
     },
     verify: {
       label: "Clippers",
       title: "Verify submitted clips",
-      copy:
-        "Run the agent check for your submitted clip. Passing clips are paid directly from escrow to the clipper wallet.",
     },
     create: {
       label: "Brands",
       title: "Create bounties",
-      copy: "Set the campaign, view target, payout, and deadline. Funding is locked in escrow when the bounty is created.",
     },
     funds: {
       label: "Brands",
       title: "Manage escrow",
-      copy: "Add STT to a bounty you created or close it to return unused escrow to your wallet.",
     },
   }[activeTask];
 
   return (
     <section className="clip-app" aria-label={`${workspace.label} Reel workspace`}>
-      <header className="clip-workspace-head">
-        <div>
-          <p className="label">{workspace.label}</p>
-          <h1 className="display">{workspace.title}</h1>
-          <p>{workspace.copy}</p>
-        </div>
-        <button type="button" className="cta cta--ghost" disabled={!contractEnabled || isPending} onClick={() => void refreshAfterWrite()}>
-          Refresh
-        </button>
-      </header>
-
       {feedback ? (
         <div className="clip-app__feedback" role="status">
           <Lock aria-hidden size={14} />
@@ -728,6 +711,14 @@ export default function ClipBountyApp({ initialTask = "submit" }: ClipBountyAppP
               <p className="label">{activeLane === "brands" ? "Your brand bounties" : "Open bounties"}</p>
               <strong>{activeLane === "brands" ? "Only campaigns created by this wallet" : "Funded clip work clippers can join"}</strong>
             </div>
+            <button
+              type="button"
+              className="cta cta--ghost cta--compact"
+              disabled={!contractEnabled || isPending}
+              onClick={() => void refreshAfterWrite()}
+            >
+              Refresh
+            </button>
           </div>
           <div className="panel__body">
             {bountiesError ? <p className="panel-state panel-state--error">{bountiesError}</p> : null}
@@ -779,13 +770,6 @@ export default function ClipBountyApp({ initialTask = "submit" }: ClipBountyAppP
         </section>
 
         <section className="panel clip-action-panel" aria-label={workspace.title}>
-          <div className="panel__head">
-            <div>
-              <p className="label">{workspace.label}</p>
-              <strong>{workspace.title}</strong>
-            </div>
-          </div>
-
           <div className="panel__body">
             {!isConnected ? (
               <div className="task-block">

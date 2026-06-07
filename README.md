@@ -1,14 +1,40 @@
-# Reel
+<p align="center">
+  <img src="public/brand/reel-logo.png" width="112" alt="Reel logo" />
+</p>
 
-Native STT clip bounties verified through Somnia Agents. YouTube view verification is the live first network; the active contract is `ReelBounty`, and the dashboard reads and writes through that ABI only.
+<h1 align="center">Reel</h1>
+
+<p align="center">
+  <strong>Agents pay clippers when results land.</strong>
+</p>
+
+<p align="center">
+  <a href="https://tryreel.vercel.app">Live app</a>
+  |
+  <a href="docs/reel-pitch-deck.md">Pitch deck</a>
+  |
+  <a href="docs/reel-pitch-deck.html">HTML slides</a>
+</p>
+
+Reel lets brands post funded YouTube clip bounties. Clippers pick paid work, submit public links, and get paid when the visible target is reached.
+
+## How It Works
+
+![Handwritten Reel system sketch](docs/reel-system-sketch.svg)
 
 ## What It Does
 
-- Lets brands fund a Reel campaign with campaign URL, rules, minimum views, reward per clip, max payouts, and deadline.
-- Lets clippers submit public YouTube URLs against a live bounty.
-- Requests verification through Somnia's LLM Parse Website agent and records the observed public view count.
-- Pays qualified clippers directly from escrow and lets the brand close the bounty to refund unused STT.
-- Keeps bounty state, submission state, request ids, observed views, and payout amounts on-chain.
+- Brands create bounties with a campaign URL, rules, minimum views, reward per clip, max payouts, and deadline.
+- Clippers submit public YouTube URLs against funded bounties.
+- Reel asks Somnia's agent to read the public page and return the visible view count.
+- If the clip reaches the target, escrow pays the clipper directly.
+- If the clip is not there yet, the app can check again later.
+- The brand can close a bounty and recover unused funds.
+
+## Pitch Deck
+
+- [Plain text deck](docs/reel-pitch-deck.md)
+- [HTML slide deck](docs/reel-pitch-deck.html)
 
 ## Verified Somnia Surface
 
@@ -36,7 +62,7 @@ contracts/
 
 src/
   app/ClipBountyApp.tsx
-  app/dashboard/
+  app/[workspace]/[section]/
   lib/clipBounty.ts
   lib/chains.ts
 ```

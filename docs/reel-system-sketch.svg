@@ -1,0 +1,97 @@
+<svg width="1200" height="560" viewBox="0 0 1200 560" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Reel handwritten system sketch</title>
+  <desc id="desc">A simple flow showing how a brand funds a bounty, a clipper submits a public YouTube link, an agent checks views, and escrow pays the clipper when the result is reached.</desc>
+  <defs>
+    <filter id="paperShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#1b2a1d" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2 2 L10 6 L2 10 Z" fill="#1f2a24"/>
+    </marker>
+    <style>
+      .paper { fill: #fffdf7; }
+      .dot { fill: #dbe8dc; opacity: 0.55; }
+      .line { fill: none; stroke: #1f2a24; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+      .thin { fill: none; stroke: #607166; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+      .green { fill: #d9f9df; }
+      .mint { fill: #ecfff0; }
+      .cream { fill: #fff3d8; }
+      .blue { fill: #e5f5ff; }
+      .ink { fill: #18231d; font-family: "Bradley Hand", "Comic Sans MS", "Marker Felt", cursive; }
+      .label { font-size: 31px; font-weight: 700; }
+      .note { font-size: 22px; opacity: 0.78; }
+      .small { font-size: 19px; opacity: 0.72; }
+    </style>
+  </defs>
+
+  <rect x="24" y="24" width="1152" height="512" rx="34" class="paper" filter="url(#paperShadow)"/>
+  <g opacity="0.38">
+    <circle class="dot" cx="74" cy="74" r="3"/><circle class="dot" cx="114" cy="74" r="3"/><circle class="dot" cx="154" cy="74" r="3"/><circle class="dot" cx="194" cy="74" r="3"/><circle class="dot" cx="234" cy="74" r="3"/><circle class="dot" cx="274" cy="74" r="3"/><circle class="dot" cx="314" cy="74" r="3"/><circle class="dot" cx="354" cy="74" r="3"/><circle class="dot" cx="394" cy="74" r="3"/><circle class="dot" cx="434" cy="74" r="3"/><circle class="dot" cx="474" cy="74" r="3"/><circle class="dot" cx="514" cy="74" r="3"/><circle class="dot" cx="554" cy="74" r="3"/><circle class="dot" cx="594" cy="74" r="3"/><circle class="dot" cx="634" cy="74" r="3"/><circle class="dot" cx="674" cy="74" r="3"/><circle class="dot" cx="714" cy="74" r="3"/><circle class="dot" cx="754" cy="74" r="3"/><circle class="dot" cx="794" cy="74" r="3"/><circle class="dot" cx="834" cy="74" r="3"/><circle class="dot" cx="874" cy="74" r="3"/><circle class="dot" cx="914" cy="74" r="3"/><circle class="dot" cx="954" cy="74" r="3"/><circle class="dot" cx="994" cy="74" r="3"/><circle class="dot" cx="1034" cy="74" r="3"/><circle class="dot" cx="1074" cy="74" r="3"/><circle class="dot" cx="1114" cy="74" r="3"/>
+    <circle class="dot" cx="74" cy="124" r="3"/><circle class="dot" cx="154" cy="124" r="3"/><circle class="dot" cx="234" cy="124" r="3"/><circle class="dot" cx="314" cy="124" r="3"/><circle class="dot" cx="394" cy="124" r="3"/><circle class="dot" cx="474" cy="124" r="3"/><circle class="dot" cx="554" cy="124" r="3"/><circle class="dot" cx="634" cy="124" r="3"/><circle class="dot" cx="714" cy="124" r="3"/><circle class="dot" cx="794" cy="124" r="3"/><circle class="dot" cx="874" cy="124" r="3"/><circle class="dot" cx="954" cy="124" r="3"/><circle class="dot" cx="1034" cy="124" r="3"/><circle class="dot" cx="1114" cy="124" r="3"/>
+    <circle class="dot" cx="74" cy="174" r="3"/><circle class="dot" cx="154" cy="174" r="3"/><circle class="dot" cx="234" cy="174" r="3"/><circle class="dot" cx="314" cy="174" r="3"/><circle class="dot" cx="394" cy="174" r="3"/><circle class="dot" cx="474" cy="174" r="3"/><circle class="dot" cx="554" cy="174" r="3"/><circle class="dot" cx="634" cy="174" r="3"/><circle class="dot" cx="714" cy="174" r="3"/><circle class="dot" cx="794" cy="174" r="3"/><circle class="dot" cx="874" cy="174" r="3"/><circle class="dot" cx="954" cy="174" r="3"/><circle class="dot" cx="1034" cy="174" r="3"/><circle class="dot" cx="1114" cy="174" r="3"/>
+    <circle class="dot" cx="74" cy="224" r="3"/><circle class="dot" cx="154" cy="224" r="3"/><circle class="dot" cx="234" cy="224" r="3"/><circle class="dot" cx="314" cy="224" r="3"/><circle class="dot" cx="394" cy="224" r="3"/><circle class="dot" cx="474" cy="224" r="3"/><circle class="dot" cx="554" cy="224" r="3"/><circle class="dot" cx="634" cy="224" r="3"/><circle class="dot" cx="714" cy="224" r="3"/><circle class="dot" cx="794" cy="224" r="3"/><circle class="dot" cx="874" cy="224" r="3"/><circle class="dot" cx="954" cy="224" r="3"/><circle class="dot" cx="1034" cy="224" r="3"/><circle class="dot" cx="1114" cy="224" r="3"/>
+    <circle class="dot" cx="74" cy="274" r="3"/><circle class="dot" cx="154" cy="274" r="3"/><circle class="dot" cx="234" cy="274" r="3"/><circle class="dot" cx="314" cy="274" r="3"/><circle class="dot" cx="394" cy="274" r="3"/><circle class="dot" cx="474" cy="274" r="3"/><circle class="dot" cx="554" cy="274" r="3"/><circle class="dot" cx="634" cy="274" r="3"/><circle class="dot" cx="714" cy="274" r="3"/><circle class="dot" cx="794" cy="274" r="3"/><circle class="dot" cx="874" cy="274" r="3"/><circle class="dot" cx="954" cy="274" r="3"/><circle class="dot" cx="1034" cy="274" r="3"/><circle class="dot" cx="1114" cy="274" r="3"/>
+    <circle class="dot" cx="74" cy="324" r="3"/><circle class="dot" cx="154" cy="324" r="3"/><circle class="dot" cx="234" cy="324" r="3"/><circle class="dot" cx="314" cy="324" r="3"/><circle class="dot" cx="394" cy="324" r="3"/><circle class="dot" cx="474" cy="324" r="3"/><circle class="dot" cx="554" cy="324" r="3"/><circle class="dot" cx="634" cy="324" r="3"/><circle class="dot" cx="714" cy="324" r="3"/><circle class="dot" cx="794" cy="324" r="3"/><circle class="dot" cx="874" cy="324" r="3"/><circle class="dot" cx="954" cy="324" r="3"/><circle class="dot" cx="1034" cy="324" r="3"/><circle class="dot" cx="1114" cy="324" r="3"/>
+    <circle class="dot" cx="74" cy="374" r="3"/><circle class="dot" cx="154" cy="374" r="3"/><circle class="dot" cx="234" cy="374" r="3"/><circle class="dot" cx="314" cy="374" r="3"/><circle class="dot" cx="394" cy="374" r="3"/><circle class="dot" cx="474" cy="374" r="3"/><circle class="dot" cx="554" cy="374" r="3"/><circle class="dot" cx="634" cy="374" r="3"/><circle class="dot" cx="714" cy="374" r="3"/><circle class="dot" cx="794" cy="374" r="3"/><circle class="dot" cx="874" cy="374" r="3"/><circle class="dot" cx="954" cy="374" r="3"/><circle class="dot" cx="1034" cy="374" r="3"/><circle class="dot" cx="1114" cy="374" r="3"/>
+    <circle class="dot" cx="74" cy="424" r="3"/><circle class="dot" cx="154" cy="424" r="3"/><circle class="dot" cx="234" cy="424" r="3"/><circle class="dot" cx="314" cy="424" r="3"/><circle class="dot" cx="394" cy="424" r="3"/><circle class="dot" cx="474" cy="424" r="3"/><circle class="dot" cx="554" cy="424" r="3"/><circle class="dot" cx="634" cy="424" r="3"/><circle class="dot" cx="714" cy="424" r="3"/><circle class="dot" cx="794" cy="424" r="3"/><circle class="dot" cx="874" cy="424" r="3"/><circle class="dot" cx="954" cy="424" r="3"/><circle class="dot" cx="1034" cy="424" r="3"/><circle class="dot" cx="1114" cy="424" r="3"/>
+    <circle class="dot" cx="74" cy="474" r="3"/><circle class="dot" cx="154" cy="474" r="3"/><circle class="dot" cx="234" cy="474" r="3"/><circle class="dot" cx="314" cy="474" r="3"/><circle class="dot" cx="394" cy="474" r="3"/><circle class="dot" cx="474" cy="474" r="3"/><circle class="dot" cx="554" cy="474" r="3"/><circle class="dot" cx="634" cy="474" r="3"/><circle class="dot" cx="714" cy="474" r="3"/><circle class="dot" cx="794" cy="474" r="3"/><circle class="dot" cx="874" cy="474" r="3"/><circle class="dot" cx="954" cy="474" r="3"/><circle class="dot" cx="1034" cy="474" r="3"/><circle class="dot" cx="1114" cy="474" r="3"/>
+  </g>
+
+  <text x="72" y="86" class="ink label">How Reel works</text>
+  <text x="72" y="118" class="ink note">Funded clip work. Public links. Agent checks. Escrow pays.</text>
+
+  <g transform="translate(72 166)">
+    <path class="line green" d="M4 10 C33 0 181 5 211 9 C225 40 223 102 212 129 C169 139 45 133 7 128 C-2 92 0 47 4 10Z"/>
+    <text x="24" y="50" class="ink label">Brand</text>
+    <text x="24" y="82" class="ink note">posts bounty</text>
+    <text x="24" y="109" class="ink small">target + payout</text>
+  </g>
+
+  <path class="line" marker-end="url(#arrow)" d="M304 238 C349 226 382 228 421 240"/>
+
+  <g transform="translate(424 166)">
+    <path class="line cream" d="M8 11 C50 2 174 2 214 10 C226 45 222 101 211 130 C167 137 48 136 7 127 C-1 91 0 48 8 11Z"/>
+    <text x="25" y="50" class="ink label">Escrow</text>
+    <text x="25" y="82" class="ink note">holds reward</text>
+    <text x="25" y="109" class="ink small">brand can refund unused</text>
+  </g>
+
+  <path class="line" marker-end="url(#arrow)" d="M638 238 C685 226 717 228 758 240"/>
+
+  <g transform="translate(762 166)">
+    <path class="line blue" d="M7 11 C45 2 178 4 215 10 C226 43 224 102 211 130 C168 139 46 136 8 127 C0 94 -1 48 7 11Z"/>
+    <text x="25" y="50" class="ink label">Clipper</text>
+    <text x="25" y="82" class="ink note">submits link</text>
+    <text x="25" y="109" class="ink small">public YouTube first</text>
+  </g>
+
+  <path class="line" marker-end="url(#arrow)" d="M869 301 C867 347 830 369 772 385"/>
+
+  <g transform="translate(470 342)">
+    <path class="line mint" d="M8 12 C55 1 258 4 309 13 C321 51 317 110 307 144 C246 153 71 150 10 142 C-4 103 0 48 8 12Z"/>
+    <text x="26" y="54" class="ink label">Agent checks views</text>
+    <text x="26" y="88" class="ink note">reads the public page</text>
+    <text x="26" y="118" class="ink small">returns the visible count</text>
+  </g>
+
+  <path class="line" marker-end="url(#arrow)" d="M470 417 C397 421 336 399 288 350"/>
+
+  <g transform="translate(80 342)">
+    <path class="line green" d="M7 11 C48 2 174 3 214 10 C226 44 223 103 212 130 C170 139 45 136 8 127 C0 93 -1 48 7 11Z"/>
+    <text x="25" y="50" class="ink label">If target hit</text>
+    <text x="25" y="82" class="ink note">pay clipper</text>
+    <text x="25" y="109" class="ink small">straight from escrow</text>
+  </g>
+
+  <path class="thin" marker-end="url(#arrow)" d="M780 420 C866 445 973 421 1000 350"/>
+
+  <g transform="translate(958 342)">
+    <path class="line cream" d="M7 11 C46 2 141 2 179 10 C190 43 187 103 176 130 C139 137 44 135 8 127 C0 92 -1 48 7 11Z"/>
+    <text x="24" y="50" class="ink label">Not yet?</text>
+    <text x="24" y="82" class="ink note">check later</text>
+    <text x="24" y="109" class="ink small">until it passes or closes</text>
+  </g>
+
+  <path class="thin" d="M990 326 C1000 290 987 258 947 238"/>
+  <text x="728" y="522" class="ink small">No private login. Reel reads the public clip page.</text>
+</svg>

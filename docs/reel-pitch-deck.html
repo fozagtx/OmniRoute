@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reel Pitch Deck</title>
+    <style>
+      :root {
+        --paper: #fffdf7;
+        --mist: #f4f7f0;
+        --ink: #17221d;
+        --muted: #667267;
+        --line: rgba(23, 34, 29, 0.12);
+        --green: #23c463;
+        --green-dark: #11743a;
+        --orange: #f47b20;
+        --cream: #fff0d0;
+        --glass: rgba(255, 255, 255, 0.58);
+        --shadow: 0 24px 80px rgba(23, 34, 29, 0.14);
+        --serif: Georgia, "Times New Roman", serif;
+        --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-snap-type: y mandatory;
+        background: #d8ded3;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        font-family: var(--sans);
+        background: #d8ded3;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .deck {
+        width: min(1180px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 24px 0;
+      }
+
+      .slide {
+        min-height: calc(100vh - 48px);
+        scroll-snap-align: center;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        align-content: center;
+        gap: 34px;
+        margin: 0 0 24px;
+        padding: clamp(30px, 5vw, 72px);
+        border: 1px solid rgba(255, 255, 255, 0.82);
+        border-radius: 28px;
+        background: var(--paper);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        position: relative;
+      }
+
+      .slide::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(rgba(23, 34, 29, 0.08) 1.1px, transparent 1.1px);
+        background-size: 22px 22px;
+        opacity: 0.38;
+        pointer-events: none;
+      }
+
+      .slide > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .kicker {
+        width: fit-content;
+        color: var(--green-dark);
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        max-width: 860px;
+        font-family: var(--serif);
+        font-size: clamp(58px, 9vw, 126px);
+        font-weight: 500;
+        line-height: 0.92;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        max-width: 820px;
+        font-family: var(--serif);
+        font-size: clamp(42px, 6vw, 82px);
+        font-weight: 500;
+        line-height: 0.98;
+        letter-spacing: 0;
+      }
+
+      .lead {
+        max-width: 760px;
+        color: var(--muted);
+        font-size: clamp(20px, 2.2vw, 30px);
+        line-height: 1.35;
+      }
+
+      .logo {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        width: fit-content;
+        padding: 10px 16px 10px 10px;
+        border: 1px solid rgba(23, 34, 29, 0.1);
+        border-radius: 999px;
+        background: var(--glass);
+        box-shadow: 0 10px 26px rgba(23, 34, 29, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.74);
+        backdrop-filter: blur(18px) saturate(130%);
+      }
+
+      .logo img {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        box-shadow: 0 8px 18px rgba(23, 34, 29, 0.16);
+      }
+
+      .logo span {
+        font-weight: 800;
+        font-size: 18px;
+      }
+
+      .pill-row,
+      .button-row,
+      .source-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .pill,
+      .button,
+      .source-list a {
+        border: 1px solid rgba(23, 34, 29, 0.12);
+        border-radius: 999px;
+        background: var(--glass);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.84), 0 10px 28px rgba(23, 34, 29, 0.08);
+        backdrop-filter: blur(18px) saturate(130%);
+        color: var(--ink);
+        font-weight: 750;
+      }
+
+      .pill {
+        padding: 10px 16px;
+      }
+
+      .button,
+      .source-list a {
+        padding: 14px 18px;
+        text-decoration: none;
+      }
+
+      .button.primary {
+        color: white;
+        background: #17221d;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .grid.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .card,
+      .quote {
+        min-height: 190px;
+        padding: 24px;
+        border: 1px solid rgba(23, 34, 29, 0.11);
+        border-radius: 22px;
+        background: var(--glass);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74), 0 18px 48px rgba(23, 34, 29, 0.1);
+        backdrop-filter: blur(18px) saturate(130%);
+      }
+
+      .card strong,
+      .quote strong {
+        display: block;
+        margin-bottom: 10px;
+        font-size: clamp(24px, 2.4vw, 34px);
+        line-height: 1.05;
+      }
+
+      .card span,
+      .quote span,
+      li {
+        color: var(--muted);
+        font-size: clamp(18px, 1.9vw, 24px);
+        line-height: 1.35;
+      }
+
+      ul,
+      ol {
+        margin: 0;
+        padding-left: 26px;
+      }
+
+      li + li {
+        margin-top: 14px;
+      }
+
+      .big-number {
+        font-family: var(--serif);
+        font-size: clamp(62px, 8vw, 116px);
+        line-height: 0.86;
+      }
+
+      .accent {
+        color: var(--green-dark);
+      }
+
+      .orange {
+        color: #b84f0a;
+      }
+
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .step {
+        min-height: 170px;
+        padding: 22px;
+        border: 1px solid rgba(23, 34, 29, 0.11);
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .step small {
+        display: block;
+        color: var(--green-dark);
+        font-weight: 850;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .step strong {
+        display: block;
+        margin-top: 22px;
+        font-family: var(--serif);
+        font-size: clamp(30px, 3vw, 42px);
+        font-weight: 500;
+        line-height: 1;
+      }
+
+      .step span {
+        display: block;
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.35;
+      }
+
+      .sketch {
+        width: 100%;
+        border-radius: 22px;
+        border: 1px solid rgba(23, 34, 29, 0.12);
+        box-shadow: 0 24px 70px rgba(23, 34, 29, 0.14);
+      }
+
+      .footer {
+        align-self: end;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .slide.title {
+        align-content: space-between;
+      }
+
+      .title-wrap {
+        display: grid;
+        gap: 24px;
+      }
+
+      .hero-line {
+        max-width: 960px;
+      }
+
+      .wide {
+        max-width: 980px;
+      }
+
+      .proof {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 18px;
+        align-items: stretch;
+      }
+
+      .mini-window {
+        min-height: 430px;
+        padding: 18px;
+        border: 1px solid rgba(23, 34, 29, 0.12);
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.58);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78), 0 24px 70px rgba(23, 34, 29, 0.12);
+      }
+
+      .mini-sidebar {
+        width: 170px;
+        min-height: 390px;
+        padding: 18px;
+        border-radius: 22px;
+        background: #fffefa;
+        border: 1px solid var(--line);
+      }
+
+      .mini-layout {
+        display: flex;
+        gap: 18px;
+      }
+
+      .mini-menu {
+        display: grid;
+        gap: 10px;
+        margin-top: 30px;
+      }
+
+      .mini-menu span,
+      .mini-card span {
+        display: block;
+        padding: 12px;
+        border-radius: 14px;
+        background: #f3f6ef;
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      .mini-menu span:first-child {
+        color: var(--green-dark);
+        background: #dcf9e5;
+      }
+
+      .mini-main {
+        flex: 1;
+        display: grid;
+        gap: 14px;
+        align-content: start;
+      }
+
+      .mini-card {
+        min-height: 124px;
+        padding: 18px;
+        border-radius: 18px;
+        border: 1px solid var(--line);
+        background: #fffefa;
+      }
+
+      .mini-card strong {
+        display: block;
+        font-family: var(--serif);
+        font-size: 34px;
+        font-weight: 500;
+        margin-bottom: 14px;
+      }
+
+      .notes {
+        display: none;
+      }
+
+      @media (max-width: 860px) {
+        .slide {
+          min-height: auto;
+          padding: 30px 22px;
+        }
+
+        .grid,
+        .grid.two,
+        .flow,
+        .proof {
+          grid-template-columns: 1fr;
+        }
+
+        .mini-layout {
+          flex-direction: column;
+        }
+
+        .mini-sidebar {
+          width: 100%;
+          min-height: auto;
+        }
+      }
+
+      @media print {
+        html,
+        body {
+          background: white;
+        }
+
+        .deck {
+          width: 100%;
+          padding: 0;
+        }
+
+        .slide {
+          min-height: 100vh;
+          box-shadow: none;
+          break-after: page;
+          margin: 0;
+          border-radius: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="deck">
+      <section class="slide title" aria-label="Reel title">
+        <div class="logo">
+          <img src="../public/brand/reel-logo.png" alt="Reel logo" />
+          <span>Reel</span>
+        </div>
+        <div class="title-wrap">
+          <span class="kicker">Result bounties for clip work</span>
+          <h1 class="hero-line">Agents pay clippers when results land.</h1>
+          <p class="lead wide">Brands fund clip bounties. Clippers post public YouTube links. Reel checks the visible result and releases payment when the target is reached.</p>
+          <div class="button-row">
+            <a class="button primary" href="https://tryreel.vercel.app">Open live app</a>
+            <a class="button" href="https://shannon-explorer.somnia.network/address/0xd675eA5418b10888Ef74243c739831db85B42676">View live contract</a>
+          </div>
+        </div>
+        <p class="footer">Pitch deck. June 2026.</p>
+      </section>
+
+      <section class="slide" aria-label="Problem">
+        <span class="kicker">The problem</span>
+        <h2>Creator campaigns still run on trust.</h2>
+        <div class="grid">
+          <article class="card"><strong>Brands pay early</strong><span>Money leaves before anyone knows which clips actually worked.</span></article>
+          <article class="card"><strong>Clippers chase promises</strong><span>Good clippers want paid work, not DMs and screenshots after delivery.</span></article>
+          <article class="card"><strong>Proof is messy</strong><span>Spreadsheets, manual checks, and delayed payouts slow every small campaign.</span></article>
+        </div>
+      </section>
+
+      <section class="slide" aria-label="Why now">
+        <span class="kicker">Why now</span>
+        <h2>Short-form video has the reach. Brands now want proof.</h2>
+        <div class="grid two">
+          <article class="card">
+            <div class="big-number accent">200B+</div>
+            <span>YouTube says Shorts average over 200 billion daily views.</span>
+          </article>
+          <article class="card">
+            <div class="big-number orange">$37B</div>
+            <span>IAB projects U.S. creator economy ad spend at $37 billion in 2025.</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="slide" aria-label="Product">
+        <span class="kicker">The product</span>
+        <h2>Reel is a result bounty board for clippers.</h2>
+        <div class="flow">
+          <div class="step"><small>01</small><strong>Fund</strong><span>Brand sets the campaign, target, reward, and deadline.</span></div>
+          <div class="step"><small>02</small><strong>Post</strong><span>Clipper submits a public YouTube link.</span></div>
+          <div class="step"><small>03</small><strong>Check</strong><span>Agent reads the visible result.</span></div>
+          <div class="step"><small>04</small><strong>Pay</strong><span>Escrow releases reward when the target is hit.</span></div>
+        </div>
+      </section>
+
+      <section class="slide" aria-label="How it works sketch">
+        <span class="kicker">How it works</span>
+        <h2>One clean loop: funded work, public proof, automatic payout.</h2>
+        <img class="sketch" src="./reel-system-sketch.svg" alt="Handwritten Reel system sketch" />
+      </section>
+
+      <section class="slide" aria-label="For brands">
+        <span class="kicker">For brands</span>
+        <h2>Only pay for clips that reach the bar.</h2>
+        <div class="grid two">
+          <article class="card"><strong>Clear spend</strong><span>Set the view target, payout, max winners, and deadline before launch.</span></article>
+          <article class="card"><strong>Visible progress</strong><span>See submitted links, checks, paid clips, and unused funds.</span></article>
+          <article class="card"><strong>Refund unused funds</strong><span>Close a bounty and recover funds that were not paid out.</span></article>
+          <article class="card"><strong>YouTube first</strong><span>Start where clip work is already obvious, then expand to more public platforms.</span></article>
+        </div>
+      </section>
+
+      <section class="slide" aria-label="For clippers">
+        <span class="kicker">For clippers</span>
+        <h2>Pick paid work, post the link, get paid when it hits.</h2>
+        <div class="grid">
+          <article class="card"><strong>Funded before work</strong><span>Clippers can see a bounty is backed before spending time on it.</span></article>
+          <article class="card"><strong>Public link proof</strong><span>Submit a YouTube URL instead of arguing over screenshots.</span></article>
+          <article class="card"><strong>Direct payout</strong><span>When the visible views pass the target, reward goes to the clipper wallet.</span></article>
+        </div>
+      </section>
+
+      <section class="slide" aria-label="Agent">
+        <span class="kicker">Why the agent matters</span>
+        <h2>The agent is the checker, not the boss.</h2>
+        <ul class="lead">
+          <li>It reads the public clip page.</li>
+          <li>It returns the visible view count.</li>
+          <li>It can check again later if the clip is still growing.</li>
+          <li>It does not need a creator login.</li>
+        </ul>
+      </section>
+
+      <section class="slide" aria-label="Live proof">
+        <span class="kicker">What is live</span>
+        <div class="proof">
+          <div>
+            <h2>Reel is already running as a working testnet product.</h2>
+            <p class="lead">Brand and clipper workspaces are separate. YouTube checks are live first. Scheduled rechecks are wired for clips that need more time.</p>
+          </div>
+          <div class="mini-window" aria-label="Dashboard preview">
+            <div class="mini-layout">
+              <aside class="mini-sidebar">
+                <div class="logo"><img src="../public/brand/reel-logo.png" alt="" /><span>Reel</span></div>
+                <div class="mini-menu">
+                  <span>Clippers</span>
+                  <span>Brands</span>
+                  <span>Verify</span>
+                  <span>Funds</span>
+                </div>
+              </aside>
+              <section class="mini-main">
+                <article class="mini-card"><strong>Join bounty</strong><span>Funded clip work</span></article>
+                <article class="mini-card"><strong>Create bounty</strong><span>Target, reward, deadline</span></article>
+                <article class="mini-card"><strong>View check</strong><span>Agent reads public views</span></article>
+              </section>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" aria-label="Business model">
+        <span class="kicker">Business model</span>
+        <h2>Reel takes a small fee when a clip gets paid.</h2>
+        <div class="grid">
+          <article class="card"><strong>Paid reward fee</strong><span>A small cut from completed bounties, not failed attempts.</span></article>
+          <article class="card"><strong>Brand tools</strong><span>Team dashboards, campaign templates, and exportable reports.</span></article>
+          <article class="card"><strong>Faster checks</strong><span>Premium check frequency for time-sensitive campaigns.</span></article>
+        </div>
+      </section>
+
+      <section class="slide" aria-label="Go to market">
+        <span class="kicker">Go to market</span>
+        <h2>Start with YouTube clippers because the job is clear.</h2>
+        <div class="grid two">
+          <article class="card"><strong>Recruit clipper groups</strong><span>Start where people already make Shorts for reach.</span></article>
+          <article class="card"><strong>Run brand pilots</strong><span>Clear offer, clear target, short campaign window.</span></article>
+          <article class="card"><strong>Publish payout proof</strong><span>Show clips submitted, clips paid, and cost per result.</span></article>
+          <article class="card"><strong>Expand platforms later</strong><span>Add other public social networks after YouTube works reliably.</span></article>
+        </div>
+      </section>
+
+      <section class="slide" aria-label="Ask">
+        <span class="kicker">The ask</span>
+        <h2>Run the first real campaigns.</h2>
+        <div class="grid">
+          <article class="card"><strong>5 pilot brands</strong><span>Brands with offers clippers can explain quickly.</span></article>
+          <article class="card"><strong>100 active clippers</strong><span>Small enough to manage, large enough to prove the loop.</span></article>
+          <article class="card"><strong>30 days</strong><span>Measure links submitted, clips paid, and cost per result.</span></article>
+        </div>
+      </section>
+
+      <section class="slide" aria-label="Sources">
+        <span class="kicker">Sources</span>
+        <h2>Numbers used in this deck.</h2>
+        <div class="source-list">
+          <a href="https://blog.youtube/inside-youtube/the-future-of-youtube-2026/">YouTube 2026 letter</a>
+          <a href="https://blog.youtube/news-and-events/neal-mohan-cannes-2025/">YouTube Cannes 2025</a>
+          <a href="https://www.iab.com/insights/2025-creator-economy-ad-spend-strategy-report/">IAB creator ad spend report</a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

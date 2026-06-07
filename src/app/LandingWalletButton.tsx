@@ -21,7 +21,7 @@ export default function LandingWalletButton() {
 
   async function connectAndOpenDashboard() {
     const connectedAddress = await connect();
-    if (connectedAddress) router.push("/dashboard");
+    if (connectedAddress) router.push("/dashboard/clippers");
   }
 
   return (
@@ -38,7 +38,7 @@ export default function LandingWalletButton() {
         <span>{label}</span>
       </button>
       {isConnected ? (
-        <Link className="agent-nav__cta agent-nav__cta--secondary" href="/dashboard">
+        <Link className="agent-nav__cta agent-nav__cta--secondary" href="/dashboard/clippers">
           Dashboard
         </Link>
       ) : null}
@@ -52,12 +52,12 @@ export function LandingDashboardAction({ children, className }: LandingDashboard
 
   async function connectAndOpenDashboard() {
     const connectedAddress = await connect();
-    if (connectedAddress) router.push("/dashboard");
+    if (connectedAddress) router.push("/dashboard/clippers");
   }
 
   if (isConnected) {
     return (
-      <Link className={className} href="/dashboard">
+      <Link className={className} href="/dashboard/clippers">
         {children}
       </Link>
     );

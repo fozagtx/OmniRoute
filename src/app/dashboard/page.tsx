@@ -1,7 +1,5 @@
-"use client";
-
-import ClipBountyApp from "../ClipBountyApp";
+import { redirect } from "next/navigation";
 
 export default function Dashboard() {
-  return <ClipBountyApp />;
+  redirect("/dashboard/clippers");
 }

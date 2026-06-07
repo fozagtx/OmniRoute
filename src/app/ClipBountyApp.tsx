@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { BadgeCheck, ExternalLink, Lock, Plus, Search, Send, WalletCards } from "lucide-react";
 import { formatEther, parseEther, type Address } from "viem";
 import {
@@ -65,6 +66,9 @@ type SubmissionRow = {
 type ActiveBountyTask = "submit" | "verify" | "create" | "funds";
 type AccountRole = 0 | 1 | 2;
 type RegistrationRole = "brand" | "clipper";
+type ClipBountyAppProps = {
+  initialTask?: ActiveBountyTask;
+};
 
 type WriteContractInput = {
   functionName: string;
@@ -149,10 +153,19 @@ function availableFor(row: BountyRow | undefined) {
   return row ? row.totalFunded - row.totalPaid : undefined;
 }
 
-export default function ClipBountyApp() {
+const taskPaths: Record<ActiveBountyTask, string> = {
+  submit: "/dashboard/clippers",
+  verify: "/dashboard/verify",
+  create: "/dashboard/brands",
+  funds: "/dashboard/funds",
+};
+
+export default function ClipBountyApp({ initialTask = "submit" }: ClipBountyAppProps) {
+  const pathname = usePathname();
+  const router = useRouter();
   const { address, isConnected, publicClient, walletClient } = useWallet();
   const [isPending, setIsPending] = useState(false);
-  const [activeTask, setActiveTask] = useState<ActiveBountyTask>("submit");
+  const [activeTask, setActiveTask] = useState<ActiveBountyTask>(initialTask);
 
   const [title, setTitle] = useState("First clipper bounty push");
   const [campaignUrl, setCampaignUrl] = useState("");
@@ -375,6 +388,10 @@ export default function ClipBountyApp() {
   }, [loadSelectedBounty]);
 
   useEffect(() => {
+    setActiveTask(initialTask);
+  }, [initialTask]);
+
+  useEffect(() => {
     if (activeTask === "create") return;
     if (visibleBountyRows.length === 0) {
       if (bountyId) setBountyId("");
@@ -385,43 +402,11 @@ export default function ClipBountyApp() {
     }
   }, [activeTask, bountyId, visibleBountyRows]);
 
-  useEffect(() => {
-    function syncHashTask() {
-      const hash = window.location.hash;
-      if (hash === "#clippers" || hash === "#bounties" || hash === "#bounty-task-submit") {
-        setActiveTask("submit");
-        return;
-      }
-      if (hash === "#brands" || hash === "#bounty-task-create") {
-        setActiveTask("create");
-        return;
-      }
-      if (hash === "#verify" || hash === "#bounty-task-verify") {
-        setActiveTask("verify");
-        return;
-      }
-      if (hash === "#funds" || hash === "#bounty-task-funds") {
-        setActiveTask("funds");
-        return;
-      }
-      const nextTask = hash.replace("#bounty-task-", "");
-      if (nextTask === "submit" || nextTask === "verify" || nextTask === "create" || nextTask === "funds") {
-        setActiveTask(nextTask);
-      }
-    }
-
-    syncHashTask();
-    window.addEventListener("hashchange", syncHashTask);
-    return () => window.removeEventListener("hashchange", syncHashTask);
-  }, []);
-
   function activateTask(task: ActiveBountyTask) {
     setActiveTask(task);
-    const nextHash =
-      task === "submit" ? "#clippers" : task === "create" ? "#brands" : task === "verify" ? "#verify" : "#funds";
-    if (window.location.hash !== nextHash) {
-      history.replaceState(null, "", nextHash);
-      window.dispatchEvent(new HashChangeEvent("hashchange"));
+    const nextPath = taskPaths[task];
+    if (pathname !== nextPath) {
+      router.push(nextPath);
     }
   }
 

@@ -82,26 +82,26 @@ function parseNativeAmount(value: string, label: string) {
 }
 
 function formatNative(value: bigint | undefined) {
-  if (typeof value !== "bigint") return "not read";
+  if (typeof value !== "bigint") return "Loading";
   const [whole, decimals = ""] = formatEther(value).split(".");
   const trimmed = decimals.slice(0, 6).replace(/0+$/, "");
   return `${whole}${trimmed ? `.${trimmed}` : ""} STT`;
 }
 
 function formatCount(value: bigint | undefined) {
-  if (typeof value !== "bigint") return "not read";
+  if (typeof value !== "bigint") return "Loading";
   return new Intl.NumberFormat("en-US").format(Number(value));
 }
 
 function formatDate(value: bigint | undefined) {
-  if (typeof value !== "bigint" || value === 0n) return "not read";
+  if (typeof value !== "bigint" || value === 0n) return "Pending";
   return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(
     new Date(Number(value) * 1000),
   );
 }
 
 function labelFrom<T extends readonly string[]>(labels: T, value: number | bigint | undefined) {
-  if (value === undefined) return "not read";
+  if (value === undefined) return "Pending";
   const index = typeof value === "bigint" ? Number(value) : value;
   return labels[index] ?? `#${index}`;
 }
@@ -146,7 +146,6 @@ function availableFor(row: BountyRow | undefined) {
 export default function ClipBountyApp() {
   const { address, isConnected, publicClient, walletClient } = useWallet();
   const [isPending, setIsPending] = useState(false);
-  const [revealed, setRevealed] = useState(false);
   const [activeTask, setActiveTask] = useState<ActiveBountyTask>("submit");
 
   const [title, setTitle] = useState("First creator bounty push");
@@ -312,10 +311,6 @@ export default function ClipBountyApp() {
       setSubmissionsLoading(false);
     }
   }, [bountyIdForRead, publicClient]);
-
-  useEffect(() => {
-    setRevealed(true);
-  }, []);
 
   useEffect(() => {
     void loadContractSnapshot().then((count) => loadBounties(count));
@@ -565,10 +560,10 @@ export default function ClipBountyApp() {
   }
 
   return (
-    <section className="clip-app t-panel-slide" data-open={revealed ? "true" : "false"} aria-label="Social bounty escrow">
+    <section className="clip-app" aria-label="Reel escrow">
       <header className="clip-app__head">
         <div>
-          <h1 className="display">Social bounties</h1>
+          <h1 className="display">Reel</h1>
           <p>Fund creator rewards, submit public URLs, and let Somnia verify the metric before escrow pays. YouTube views are live first.</p>
         </div>
         <div className="clip-contract-chip">
@@ -675,10 +670,10 @@ export default function ClipBountyApp() {
 
             <div className="clip-task-tabs" role="tablist" aria-label="Bounty workflow">
               {[
-                ["submit", "Submit"],
-                ["verify", "Verify"],
-                ["create", "Create"],
-                ["funds", "Funds"],
+                ["submit", "Submit link"],
+                ["verify", "Verify views"],
+                ["create", "Create bounty"],
+                ["funds", "Escrow funds"],
               ].map(([key, label]) => (
                 <button
                   type="button"

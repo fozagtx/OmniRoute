@@ -1,10 +1,10 @@
-# Somnia Social Bounties
+# Reel
 
-Native STT social creator bounties verified through Somnia Agents. YouTube view verification is the live first network; the active contract is `SomniaClipBounty`, and the dashboard reads and writes through that ABI only.
+Native STT creator bounties verified through Somnia Agents. YouTube view verification is the live first network; the active contract is `SomniaClipBounty`, and the dashboard reads and writes through that ABI only.
 
 ## What It Does
 
-- Lets a creator fund a social bounty with campaign URL, rules, minimum views, reward per post, max payouts, and deadline.
+- Lets a creator fund a Reel campaign with campaign URL, rules, minimum views, reward per post, max payouts, and deadline.
 - Lets creators submit public URLs against a live bounty. The current contract accepts YouTube URLs for live verification.
 - Requests verification through Somnia's LLM Parse Website agent and records the observed public view count.
 - Pays qualified creators directly from escrow and lets the funder close the bounty to refund unused STT.
@@ -56,7 +56,7 @@ cd contracts
 forge script script/Deploy.s.sol --rpc-url somnia_testnet --broadcast --slow
 ```
 
-Fallback deploy command for this machine:
+Direct deploy command for this machine:
 
 ```bash
 cd contracts

@@ -36,7 +36,7 @@ const howItWorks = [
   },
   {
     title: "Collect public links",
-    body: "Creators submit public social URLs against the bounty. Today the contract accepts YouTube links for live view checks.",
+    body: "Creators submit public campaign URLs against the bounty. Today the contract accepts YouTube links for live view checks.",
   },
   {
     title: "Ask Somnia to verify",
@@ -77,8 +77,8 @@ export default function Home() {
   return (
     <main className="agent-landing">
       <div className="agent-shell">
-        <header className="agent-nav" aria-label="Social bounty navigation">
-          <Link className="agent-nav__brand" href="/" aria-label="Somnia Social Bounties home">
+        <header className="agent-nav" aria-label="Reel navigation">
+          <Link className="agent-nav__brand" href="/" aria-label="Reel home">
             <SomniaBrand />
           </Link>
 
@@ -98,10 +98,12 @@ export default function Home() {
 
         <section className="agent-hero" aria-labelledby="agent-hero-title">
           <div className="agent-hero__copy">
-            <p className="agent-announcement">Social bounties on Somnia escrow</p>
-            <h1 id="agent-hero-title">Pay creators only when the proof arrives.</h1>
+            <h1 id="agent-hero-title">
+              Turn <span className="agent-highlight agent-highlight--purple">creator proof</span> into paid{" "}
+              <span className="agent-highlight agent-highlight--orange">Reel rewards</span>.
+            </h1>
             <p>
-              Create a funded social bounty, collect public creator links, and have Somnia verify the metric before STT leaves escrow. YouTube views are live first.
+              Create a funded Reel campaign, collect public creator links, and have Somnia verify the metric before STT leaves escrow. YouTube views are live first.
             </p>
             <div className="agent-hero__actions">
               <Link className="agent-button agent-button--primary" href="/dashboard">
@@ -110,38 +112,55 @@ export default function Home() {
             </div>
           </div>
 
-          <figure className="agent-visual" aria-label="Social bounty workflow">
-            <Image
-              className="agent-hero-image"
-              src="/brand/social-bounty-agent.png"
-              alt="Creator workspace for a social bounty"
-              width={1254}
-              height={1254}
-              priority
-            />
-            <figcaption className="agent-visual__console">
-              <span>Allowed networks</span>
-              <div className="agent-platforms" aria-label="Supported social platforms">
-                <span className="agent-platform-pill agent-platform-pill--live">
-                  <span className="social-logo social-logo--youtube" aria-hidden />
-                  <span>YouTube</span>
-                  <small>Live</small>
-                </span>
-                <span className="agent-platform-pill">
-                  <span className="social-logo social-logo--twitter" aria-hidden>t</span>
-                  <span>Twitter</span>
-                  <small>Soon</small>
-                </span>
-                <span className="agent-platform-pill">
-                  <span className="social-logo social-logo--instagram" aria-hidden />
-                  <span>Instagram</span>
-                  <small>Soon</small>
-                </span>
-                <Link href="/dashboard" aria-label="Open dashboard">
-                  <span aria-hidden>↗</span>
-                </Link>
+          <figure className="agent-visual" aria-label="Reel bounty workflow">
+            <div className="agent-visual__board">
+              <div className="agent-visual__topbar">
+                <span>Reel</span>
+                <Link href="/dashboard">Create bounty</Link>
               </div>
-            </figcaption>
+
+              <div className="agent-visual__grid">
+                <section className="agent-proof-card" aria-label="Live proof card">
+                  <span>Live proof</span>
+                  <strong>1,780,144,708</strong>
+                  <p>YouTube views verified from a public URL.</p>
+                  <div>
+                    <small>Paid</small>
+                    <small>On-chain</small>
+                    <small>Escrow</small>
+                  </div>
+                </section>
+
+                <section className="agent-visual__console" aria-label="Allowed networks">
+                  <span>Allowed networks</span>
+                  <div className="agent-platforms" aria-label="Supported platforms">
+                    <span className="agent-platform-pill agent-platform-pill--live">
+                      <span className="platform-logo platform-logo--youtube" aria-hidden />
+                      <span>YouTube</span>
+                      <small>Live</small>
+                    </span>
+                    <span className="agent-platform-pill">
+                      <span className="platform-logo platform-logo--twitter" aria-hidden>t</span>
+                      <span>Twitter</span>
+                      <small>Soon</small>
+                    </span>
+                    <span className="agent-platform-pill">
+                      <span className="platform-logo platform-logo--instagram" aria-hidden />
+                      <span>Instagram</span>
+                      <small>Soon</small>
+                    </span>
+                  </div>
+                </section>
+              </div>
+
+              <div className="agent-visual__flow" aria-label="Reel contract flow">
+                <span>Fund</span>
+                <i aria-hidden />
+                <span>Verify</span>
+                <i aria-hidden />
+                <span>Pay</span>
+              </div>
+            </div>
           </figure>
         </section>
 
@@ -221,10 +240,9 @@ export default function Home() {
 function SomniaBrand() {
   return (
     <span className="somnia-brand" aria-hidden="true">
-      <Image className="somnia-brand__mark" src="/brand/somnia-bounty-logo.png" alt="" width={56} height={56} priority />
+      <Image className="somnia-brand__mark" src="/brand/reel-logo.png" alt="" width={56} height={56} priority />
       <span className="somnia-brand__text">
-        <span>Social</span>
-        <span>Bounties</span>
+        <span>Reel</span>
       </span>
     </span>
   );

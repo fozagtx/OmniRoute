@@ -3,11 +3,11 @@ import Providers from "./providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Somnia Social Bounties",
-  description: "Fund social creator bounties, verify public metrics with Somnia Agents, and pay creators from escrow.",
+  title: "Reel",
+  description: "Fund creator bounties, verify public metrics with Somnia Agents, and pay creators from escrow.",
   openGraph: {
-    title: "Somnia Social Bounties",
-    description: "Fund social creator bounties, verify public metrics with Somnia Agents, and pay creators from escrow.",
+    title: "Reel",
+    description: "Fund creator bounties, verify public metrics with Somnia Agents, and pay creators from escrow.",
     type: "website",
   },
 };

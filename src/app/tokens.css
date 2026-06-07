@@ -1,5 +1,5 @@
 /*
- * Somnia Social Bounties Design System
+ * Reel Design System
  * Bright infrastructure UI: compressed black headlines, quiet SaaS copy,
  * white panels, volt-yellow conversion controls, and restrained lavender accents.
  */
@@ -97,7 +97,7 @@
   --motion-slow: 250ms;
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Somnia social bounty theme, used by cards and the dashboard workbench. */
+  /* Reel theme, used by cards and the dashboard workbench. */
   --clip-font-main: GeistVariable, sans-serif;
   --clip-radius-button-lg-primary: 3.75rem;
   --clip-radius-button-lg-secondary: 3.75rem;

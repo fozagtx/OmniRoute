@@ -5,10 +5,10 @@ import { BadgeCheck, CircleDollarSign, LayoutGrid, Plus, Send } from "lucide-rea
 
 const navItems = [
   { href: "#bounties", full: "Bounties", short: "List", icon: LayoutGrid },
-  { href: "#bounty-task-submit", full: "Submit", short: "Send", icon: Send },
-  { href: "#bounty-task-verify", full: "Verify", short: "Check", icon: BadgeCheck },
-  { href: "#bounty-task-create", full: "Create", short: "New", icon: Plus },
-  { href: "#bounty-task-funds", full: "Funds", short: "Pay", icon: CircleDollarSign },
+  { href: "#bounty-task-submit", full: "Submit link", short: "Link", icon: Send },
+  { href: "#bounty-task-verify", full: "Verify views", short: "Views", icon: BadgeCheck },
+  { href: "#bounty-task-create", full: "Create bounty", short: "New", icon: Plus },
+  { href: "#bounty-task-funds", full: "Escrow funds", short: "STT", icon: CircleDollarSign },
 ] as const;
 
 export default function DashboardSidebar() {
@@ -25,8 +25,8 @@ export default function DashboardSidebar() {
   }, []);
 
   return (
-    <div className="sidebar__nav" aria-label="Dashboard navigation">
-      <nav className="sidebar__group" aria-label="Bounty workflow">
+    <div className="sidebar__nav" aria-label="Reel bounty navigation">
+      <nav className="sidebar__group" aria-label="Creator bounty workflow">
         <span className="sidebar__section-label sidebar__label-full">Bounty flow</span>
         {navItems.map((item) => {
           const Icon = item.icon;

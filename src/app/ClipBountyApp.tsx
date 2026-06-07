@@ -187,6 +187,7 @@ export default function ClipBountyApp() {
 
   const selectedRow = selectedBounty ?? bountyRows.find((row) => row.id.toString() === bountyId);
   const taskTabId = `bounty-task-${activeTask}`;
+  const activeLane = activeTask === "create" || activeTask === "funds" ? "brands" : "creators";
 
   const loadContractSnapshot = useCallback(async () => {
     if (!clipBountyAddress) return undefined;
@@ -328,7 +329,16 @@ export default function ClipBountyApp() {
 
   useEffect(() => {
     function syncHashTask() {
-      const nextTask = window.location.hash.replace("#bounty-task-", "");
+      const hash = window.location.hash;
+      if (hash === "#creators" || hash === "#bounties") {
+        setActiveTask("submit");
+        return;
+      }
+      if (hash === "#brands") {
+        setActiveTask("create");
+        return;
+      }
+      const nextTask = hash.replace("#bounty-task-", "");
       if (nextTask === "submit" || nextTask === "verify" || nextTask === "create" || nextTask === "funds") {
         setActiveTask(nextTask);
       }
@@ -341,7 +351,7 @@ export default function ClipBountyApp() {
 
   function activateTask(task: ActiveBountyTask) {
     setActiveTask(task);
-    const nextHash = `#bounty-task-${task}`;
+    const nextHash = task === "submit" ? "#creators" : task === "create" ? "#brands" : `#bounty-task-${task}`;
     if (window.location.hash !== nextHash) {
       history.replaceState(null, "", nextHash);
       window.dispatchEvent(new HashChangeEvent("hashchange"));
@@ -350,7 +360,7 @@ export default function ClipBountyApp() {
 
   function selectBounty(id: number) {
     setBountyId(id.toString());
-    activateTask("submit");
+    activateTask(activeLane === "brands" ? "funds" : "submit");
   }
 
   async function writeClipContract({ args, functionName, value }: WriteContractInput) {
@@ -415,7 +425,7 @@ export default function ClipBountyApp() {
         functionName: "bountyCount",
       })) as bigint;
       setBountyId(nextCount.toString());
-      activateTask("submit");
+      activateTask("funds");
       setFeedback(`Bounty created in block ${receipt.blockNumber.toString()}.`);
       await refreshAfterWrite();
     } catch (error) {
@@ -572,12 +582,37 @@ export default function ClipBountyApp() {
         </div>
       </header>
 
-      <div className="clip-workbench">
+      <section className="clip-lanes" aria-label="Dashboard lanes">
+        <button
+          type="button"
+          id="creators"
+          className="clip-lane-card"
+          data-active={activeLane === "creators" ? "true" : "false"}
+          onClick={() => activateTask("submit")}
+        >
+          <span>Creators</span>
+          <strong>Join bounties</strong>
+          <p>Pick a live funded bounty, submit a public YouTube URL, and request view verification.</p>
+        </button>
+        <button
+          type="button"
+          id="brands"
+          className="clip-lane-card"
+          data-active={activeLane === "brands" ? "true" : "false"}
+          onClick={() => activateTask("create")}
+        >
+          <span>Brands</span>
+          <strong>Create bounties</strong>
+          <p>Fund a campaign, define the view target, set the payout, and manage escrow from the contract.</p>
+        </button>
+      </section>
+
+      <div className={`clip-workbench clip-workbench--${activeLane}`}>
         <section className="panel clip-list-panel" id="bounties" aria-label="Bounties">
           <div className="panel__head">
             <div>
-              <p className="label">Bounties</p>
-              <strong>Live escrow state</strong>
+              <p className="label">{activeLane === "brands" ? "Brand campaigns" : "Available bounties"}</p>
+              <strong>{activeLane === "brands" ? "Manage funded campaigns" : "Join live bounties"}</strong>
             </div>
             <button type="button" className="cta cta--ghost" disabled={!contractEnabled || isPending} onClick={() => void refreshAfterWrite()}>
               Refresh
@@ -587,7 +622,11 @@ export default function ClipBountyApp() {
             {bountiesError ? <p className="panel-state panel-state--error">{bountiesError}</p> : null}
             {!bountiesError && bountiesLoading ? <p className="panel-state">Loading bounties.</p> : null}
             {!bountiesError && !bountiesLoading && bountyRows.length === 0 ? (
-              <p className="panel-state">No bounties found on the deployed contract.</p>
+              <p className="panel-state">
+                {activeLane === "brands"
+                  ? "No brand campaigns found on the deployed contract."
+                  : "No joinable bounties found on the deployed contract."}
+              </p>
             ) : null}
             {!bountiesError && !bountiesLoading && bountyRows.length > 0 ? (
               <div className="clip-list">
@@ -618,7 +657,7 @@ export default function ClipBountyApp() {
                           aria-pressed={selected}
                           onClick={() => selectBounty(bounty.id)}
                         >
-                          {selected ? "Selected" : "Use bounty"}
+                          {selected ? (activeLane === "brands" ? "Managing" : "Selected") : activeLane === "brands" ? "Manage" : "Join bounty"}
                         </button>
                       </div>
                     </article>
@@ -629,11 +668,20 @@ export default function ClipBountyApp() {
           </div>
         </section>
 
-        <section className="panel clip-action-panel" aria-label="Bounty actions">
+        <section
+          className="panel clip-action-panel"
+          aria-label={activeLane === "brands" ? "Brand bounty dashboard" : "Creator bounty dashboard"}
+        >
           <div className="panel__head">
             <div>
-              <p className="label">Selected bounty</p>
-              <strong>{bountyId ? `Bounty ${bountyId}` : "Pick a bounty"}</strong>
+              <p className="label">{activeLane === "brands" ? "Brand dashboard" : "Creator dashboard"}</p>
+              <strong>
+                {activeLane === "brands"
+                  ? "Create and fund bounties"
+                  : bountyId
+                    ? `Join Bounty ${bountyId}`
+                    : "Pick a bounty to join"}
+              </strong>
             </div>
             <div className="clip-counts">
               <span>{formatCount(bountyCount)} bounties</span>
@@ -664,30 +712,53 @@ export default function ClipBountyApp() {
                   </a>
                 </>
               ) : (
-                <p className="panel-state">Select a bounty or create the first one.</p>
+                <p className="panel-state">
+                  {activeLane === "brands"
+                    ? "Select a bounty to manage escrow, or create a new brand campaign."
+                    : "Select a bounty to join, then submit your public YouTube URL."}
+                </p>
               )}
             </div>
 
-            <div className="clip-task-tabs" role="tablist" aria-label="Bounty workflow">
-              {[
-                ["submit", "Submit link"],
-                ["verify", "Verify views"],
-                ["create", "Create bounty"],
-                ["funds", "Escrow funds"],
-              ].map(([key, label]) => (
-                <button
-                  type="button"
-                  className="clip-task-tab"
-                  data-active={activeTask === key ? "true" : "false"}
-                  role="tab"
-                  aria-selected={activeTask === key}
-                  aria-controls={`bounty-task-${key}`}
-                  key={key}
-                  onClick={() => activateTask(key as ActiveBountyTask)}
-                >
-                  {label}
-                </button>
-              ))}
+            <div className="clip-role-header">
+              <div>
+                <p className="label">{activeLane === "brands" ? "Brand actions" : "Creator actions"}</p>
+                <h2>{activeLane === "brands" ? "Create, fund, and close campaigns" : "Join, submit, and verify clips"}</h2>
+                <p>
+                  {activeLane === "brands"
+                    ? "Brands manage campaign terms, escrow, and unused credit from this screen."
+                    : "Participants choose a funded bounty, submit a public YouTube URL, then request the on-chain view check."}
+                </p>
+              </div>
+              <div
+                className="clip-task-tabs"
+                role="tablist"
+                aria-label={activeLane === "brands" ? "Brand workflow" : "Creator workflow"}
+              >
+                {(activeLane === "brands"
+                  ? [
+                      ["create", "Create bounty"],
+                      ["funds", "Escrow funds"],
+                    ]
+                  : [
+                      ["submit", "Submit link"],
+                      ["verify", "Verify views"],
+                    ]
+                ).map(([key, label]) => (
+                  <button
+                    type="button"
+                    className="clip-task-tab"
+                    data-active={activeTask === key ? "true" : "false"}
+                    role="tab"
+                    aria-selected={activeTask === key}
+                    aria-controls={`bounty-task-${key}`}
+                    key={key}
+                    onClick={() => activateTask(key as ActiveBountyTask)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {activeTask === "submit" ? (

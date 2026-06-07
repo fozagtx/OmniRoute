@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BadgeCheck, CircleDollarSign, LayoutGrid, Plus, Send } from "lucide-react";
+import { BadgeCheck, CircleDollarSign, LayoutGrid, Plus } from "lucide-react";
 
 const navItems = [
-  { href: "#bounties", full: "Bounties", short: "List", icon: LayoutGrid },
-  { href: "#bounty-task-submit", full: "Submit link", short: "Link", icon: Send },
+  { href: "#creators", full: "Creators", short: "Join", icon: LayoutGrid },
+  { href: "#brands", full: "Brands", short: "Make", icon: Plus },
   { href: "#bounty-task-verify", full: "Verify views", short: "Views", icon: BadgeCheck },
-  { href: "#bounty-task-create", full: "Create bounty", short: "New", icon: Plus },
   { href: "#bounty-task-funds", full: "Escrow funds", short: "STT", icon: CircleDollarSign },
 ] as const;
 
@@ -30,7 +29,13 @@ export default function DashboardSidebar() {
         <span className="sidebar__section-label sidebar__label-full">Bounty flow</span>
         {navItems.map((item) => {
           const Icon = item.icon;
-          const active = activeHref === item.href || (activeHref === "" && item.href === "#bounties");
+          const normalizedHref =
+            activeHref === "#bounty-task-submit" || activeHref === "#bounties"
+              ? "#creators"
+              : activeHref === "#bounty-task-create"
+                ? "#brands"
+                : activeHref;
+          const active = normalizedHref === item.href || (normalizedHref === "" && item.href === "#creators");
           return (
             <a
               className={`sidebar__link ${active ? "sidebar__link--active" : ""}`}

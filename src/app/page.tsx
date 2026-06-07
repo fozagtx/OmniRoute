@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import LandingWalletButton from "./LandingWalletButton";
+import LandingWalletButton, { LandingDashboardAction } from "./LandingWalletButton";
 import { clipBountyAddress } from "@/lib/clipBounty";
 
 const flowItems = [
@@ -90,9 +90,6 @@ export default function Home() {
 
           <div className="agent-nav__actions">
             <LandingWalletButton />
-            <Link className="agent-nav__cta agent-nav__cta--secondary" href="/dashboard">
-              Dashboard
-            </Link>
           </div>
         </header>
 
@@ -106,9 +103,9 @@ export default function Home() {
               Create a funded Reel campaign, collect public creator links, and have Somnia verify the metric before STT leaves escrow. YouTube views are live first.
             </p>
             <div className="agent-hero__actions">
-              <Link className="agent-button agent-button--primary" href="/dashboard">
+              <LandingDashboardAction className="agent-button agent-button--primary">
                 Create bounty
-              </Link>
+              </LandingDashboardAction>
             </div>
           </div>
 
@@ -116,14 +113,14 @@ export default function Home() {
             <div className="agent-visual__board">
               <div className="agent-visual__topbar">
                 <span>Reel</span>
-                <Link href="/dashboard">Create bounty</Link>
+                <LandingDashboardAction>Create bounty</LandingDashboardAction>
               </div>
 
               <div className="agent-visual__grid">
                 <section className="agent-proof-card" aria-label="Live proof card">
-                  <span>Live proof</span>
-                  <strong>1,780,144,708</strong>
-                  <p>YouTube views verified from a public URL.</p>
+                  <span>Verified metric</span>
+                  <strong>Public URL</strong>
+                  <p>YouTube views are read from the creator link submitted to the contract.</p>
                   <div>
                     <small>Paid</small>
                     <small>On-chain</small>
@@ -228,9 +225,6 @@ export default function Home() {
             <span>Somnia Testnet</span>
             <span className="agent-footer__contract">{contractAddress}</span>
           </div>
-          <Link className="agent-footer__link" href="/dashboard">
-            Dashboard
-          </Link>
         </footer>
       </div>
     </main>
